@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Automation - Smart Retail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --text: #e5e7eb;
+      --card: rgba(15,23,42,0.8);
+      --border: rgba(148,163,184,0.2);
+      --sidebar: rgba(15,23,42,0.95);
+      --accent: #3b82f6;
+    }
+    body { background: var(--bg) !important; color: var(--text) !important; }
+    .sidebar { background: var(--sidebar) !important; }
+    .card, .product-card, .chart-card, .table-card, .section-card,
+    .stat-card, .customer-card, .rule-card, .modal-box { 
+      background: var(--card) !important; 
+      border-color: var(--border) !important; 
+    }
+    .header, .filter-bar, .tabs { 
+      background: var(--card) !important; 
+      border-color: var(--border) !important; 
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { background: #0a0e1a; color: #e5e7eb; min-height: 100vh; }
+
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: rgba(15,23,42,0.95); border-right: 1px solid rgba(148,163,184,0.2); padding: 24px 0; backdrop-filter: blur(10px); z-index: 100; }
+    .sidebar-header { padding: 0 24px 24px; border-bottom: 1px solid rgba(148,163,184,0.2); }
+    .sidebar-header h2 { font-size: 20px; background: linear-gradient(135deg,#3b82f6,#22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-menu { margin-top: 24px; padding: 0 12px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 4px; border-radius: 10px; color: #94a3b8; text-decoration: none; cursor: pointer; transition: all 0.2s; }
+    .nav-item:hover { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .nav-item.active { background: rgba(59,130,246,0.15); color: #3b82f6; font-weight: 600; }
+
+    .main-content { margin-left: 260px; padding: 24px; }
+
+    /* HEADER */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; padding: 20px 24px; background: rgba(15,23,42,0.6); border-radius: 16px; border: 1px solid rgba(148,163,184,0.2); }
+    .header h1 { font-size: 22px; font-weight: 700; }
+    .header p { color: #64748b; font-size: 13px; margin-top: 4px; }
+    .btn-primary { padding: 11px 22px; background: linear-gradient(135deg,#3b82f6,#22c55e); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* STAT CARDS */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.15); border-radius: 14px; padding: 20px; }
+    .stat-icon { font-size: 28px; margin-bottom: 10px; }
+    .stat-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 700; }
+    .c-green{color:#22c55e} .c-blue{color:#3b82f6} .c-yellow{color:#f59e0b} .c-red{color:#ef4444} .c-purple{color:#a78bfa}
+
+    /* TWO COLUMNS */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+    .full-col { margin-bottom: 28px; }
+
+    /* SECTION CARD */
+    .section-card { background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.15); border-radius: 16px; overflow: hidden; }
+    .section-head { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid rgba(148,163,184,0.1); }
+    .section-title { font-size: 15px; font-weight: 700; }
+    .section-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .section-body { padding: 18px 22px; }
+
+    /* RULE CARDS */
+    .rule-card { display: flex; align-items: flex-start; gap: 16px; padding: 16px; background: rgba(30,41,59,0.5); border: 1px solid rgba(148,163,184,0.1); border-radius: 14px; margin-bottom: 12px; transition: all 0.2s; }
+    .rule-card:last-child { margin-bottom: 0; }
+    .rule-card.active-rule { border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.04); }
+    .rule-card.inactive-rule { opacity: 0.6; }
+
+    .rule-icon { font-size: 26px; width: 44px; height: 44px; background: rgba(59,130,246,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .rule-info { flex: 1; }
+    .rule-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .rule-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
+    .rule-meta { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .rule-tag { padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .tag-trigger { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .tag-action  { background: rgba(34,197,94,0.15);  color: #22c55e; }
+    .tag-freq    { background: rgba(139,92,246,0.15); color: #a78bfa; }
+
+    /* TOGGLE SWITCH */
+    .toggle-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+    .toggle { position: relative; width: 44px; height: 24px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: rgba(148,163,184,0.2); border-radius: 24px; cursor: pointer; transition: 0.3s; }
+    .toggle-slider::before { content:''; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; }
+    input:checked + .toggle-slider { background: #22c55e; }
+    input:checked + .toggle-slider::before { transform: translateX(20px); }
+    .toggle-label { font-size: 10px; font-weight: 700; color: #64748b; }
+
+    /* RUN BUTTON */
+    .btn-run { padding: 6px 14px; background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; border-radius: 8px; color: #3b82f6; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .btn-run:hover { background: #3b82f6; color: white; }
+    .btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ACTIVITY LOG */
+    .log-entry { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(148,163,184,0.07); }
+    .log-entry:last-child { border-bottom: none; }
+    .log-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .log-dot-green  { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+    .log-dot-yellow { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+    .log-dot-red    { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+    .log-dot-blue   { background: #3b82f6; box-shadow: 0 0 6px #3b82f6; }
+    .log-text { flex: 1; font-size: 13px; line-height: 1.5; }
+    .log-time { font-size: 11px; color: #64748b; flex-shrink: 0; }
+
+    /* WORKFLOW STEPS */
+    .workflow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; padding: 10px 0; }
+    .wf-step { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .wf-box { padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; min-width: 110px; }
+    .wf-trigger  { background: rgba(59,130,246,0.2);  border: 1px solid #3b82f6; color: #60a5fa; }
+    .wf-check    { background: rgba(245,158,11,0.2);  border: 1px solid #f59e0b; color: #fbbf24; }
+    .wf-action   { background: rgba(34,197,94,0.2);   border: 1px solid #22c55e; color: #4ade80; }
+    .wf-notify   { background: rgba(139,92,246,0.2);  border: 1px solid #8b5cf6; color: #c4b5fd; }
+    .wf-label    { font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+    .wf-arrow    { font-size: 20px; color: #334155; padding: 0 4px; margin-bottom: 20px; }
+
+    /* LOW STOCK LIVE CHECK */
+    .alert-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; margin-bottom: 8px; }
+    .alert-item:last-child { margin-bottom: 0; }
+    .alert-name { font-size: 13px; font-weight: 600; }
+    .alert-stock { font-size: 12px; color: #ef4444; margin-top: 2px; }
+    .alert-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; background: rgba(239,68,68,0.2); color: #ef4444; }
+
+    /* NEW RULE MODAL */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+    .modal.active { display: flex; }
+    .modal-box { background: rgba(15,23,42,0.99); border: 1px solid rgba(148,163,184,0.25); border-radius: 22px; padding: 32px; width: min(520px, 94vw); max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.6); animation: popIn 0.22s ease; }
+    @keyframes popIn { from{transform:scale(0.88);opacity:0} to{transform:scale(1);opacity:1} }
+    .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .modal-sub { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px 14px; background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); border-radius: 10px; color: #e5e7eb; font-size: 14px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #3b82f6; }
+    .form-group select option { background: #0f172a; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .btn-cancel { flex:1; padding:11px; background:rgba(148,163,184,0.1); border:1px solid rgba(148,163,184,0.2); border-radius:10px; color:#94a3b8; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-cancel:hover { background:rgba(148,163,184,0.2); }
+
+    /* N8N INFO BANNER */
+    .n8n-banner { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.1)); border: 1px solid rgba(99,102,241,0.3); border-radius: 16px; padding: 22px 24px; margin-bottom: 28px; display: flex; align-items: center; gap: 20px; }
+    .n8n-icon { font-size: 40px; flex-shrink: 0; }
+    .n8n-title { font-size: 15px; font-weight: 700; color: #a5b4fc; margin-bottom: 4px; }
+    .n8n-desc { font-size: 13px; color: #64748b; line-height: 1.6; }
+    .n8n-steps { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .n8n-step { padding: 5px 14px; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.25); border-radius: 20px; font-size: 12px; color: #a5b4fc; font-weight: 600; }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    .empty-log { text-align:center; padding:24px; color:#64748b; font-size:13px; }
+  </style>
+</head>
+<body>
+<script>
+(function(){
+  const s = JSON.parse(localStorage.getItem('smart_retail_settings')||'{}');
+  const theme  = s.theme  || 'dark';
+  const accent = s.accent || '#3b82f6';
+  if(theme==='light'){
+    document.documentElement.style.setProperty('--bg','#f1f5f9');
+    document.documentElement.style.setProperty('--text','#0f172a');
+    document.documentElement.style.setProperty('--card','#ffffff');
+    document.documentElement.style.setProperty('--border','#e2e8f0');
+    document.documentElement.style.setProperty('--sidebar','rgba(241,245,249,0.98)');
+  } else if(theme==='blue'){
+    document.documentElement.style.setProperty('--bg','#0d1f3c');
+    document.documentElement.style.setProperty('--text','#e5e7eb');
+    document.documentElement.style.setProperty('--card','rgba(13,31,60,0.9)');
+    document.documentElement.style.setProperty('--border','rgba(59,130,246,0.2)');
+    document.documentElement.style.setProperty('--sidebar','rgba(10,20,50,0.98)');
+  } else {
+    document.documentElement.style.setProperty('--bg','#0a0e1a');
+    document.documentElement.style.setProperty('--text','#e5e7eb');
+    document.documentElement.style.setProperty('--card','rgba(15,23,42,0.8)');
+    document.documentElement.style.setProperty('--border','rgba(148,163,184,0.2)');
+    document.documentElement.style.setProperty('--sidebar','rgba(15,23,42,0.95)');
+  }
+  document.documentElement.style.setProperty('--accent', accent);
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header"><h2>Smart Retail</h2></div>
+  <nav class="nav-menu">
+    <a href="dashboard_dynamic.html" class="nav-item"><span>📊</span><span>Dashboard</span></a>
+    <a href="products.html"          class="nav-item"><span>📦</span><span>Products</span></a>
+    <a href="orders.html"            class="nav-item"><span>🛒</span><span>Orders</span></a>
+    <a href="customers.html"         class="nav-item"><span>👥</span><span>Customers</span></a>
+    <a href="automation.html"        class="nav-item active"><span>🤖</span><span>Automation</span></a>
+    <a href="dashboard_analytics.html" class="nav-item"><span>📈</span><span>Analytics</span></a>
+    <a href="settings.html"          class="nav-item"><span>⚙️</span><span>Settings</span></a>
+    <a href="index.html"             class="nav-item"><span>🚪</span><span>Logout</span></a>
+  </nav>
+</div>
+
+<div class="main-content">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>🤖 Automation & Workflows</h1>
+      <p>Manage automation rules, triggers and smart alerts</p>
+    </div>
+    <button class="btn-primary" onclick="openModal()">➕ New Rule</button>
+  </div>
+
+  <!-- OWNER EMAIL BANNER -->
+  <div id="owner-banner" style="
+    display:flex; align-items:center; gap:14px;
+    background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25);
+    border-radius:12px; padding:14px 20px; margin-bottom:24px;
+  ">
+    <span style="font-size:22px">📧</span>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#22c55e">Alert Destination</div>
+      <div style="font-size:13px;color:#94a3b8;margin-top:2px">
+        All automation emails will be sent to: 
+        <strong style="color:#e5e7eb" id="owner-email-display">Loading...</strong>
+      </div>
+    </div>
+    <a href="login.html" style="margin-left:auto;font-size:12px;color:#3b82f6;text-decoration:none;font-weight:600;white-space:nowrap">
+      🔄 Switch User
+    </a>
+  </div>
+
+  <!-- N8N INFO BANNER -->
+  <div class="n8n-banner">
+    <div class="n8n-icon">🔗</div>
+    <div>
+      <div class="n8n-title">n8n Workflow Automation — Integration Ready</div>
+      <div class="n8n-desc">
+        This page simulates automation logic locally. When you get n8n access, each rule below maps directly to an n8n workflow node. Connect n8n at <strong style="color:#a5b4fc">localhost:5678</strong> to unlock real email triggers, webhook calls, and scheduled jobs.
+      </div>
+      <div class="n8n-steps">
+        <span class="n8n-step">📥 Trigger Node</span>
+        <span class="n8n-step">🔍 Condition Node</span>
+        <span class="n8n-step">📧 Email / Webhook</span>
+        <span class="n8n-step">🗄️ DB Update</span>
+        <span class="n8n-step">📲 Alert Node</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-label">Active Rules</div>
+      <div class="stat-value c-green" id="s-active">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💤</div>
+      <div class="stat-label">Inactive Rules</div>
+      <div class="stat-value c-yellow" id="s-inactive">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔔</div>
+      <div class="stat-label">Alerts Fired</div>
+      <div class="stat-value c-blue" id="s-fired">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-label">Low Stock Items</div>
+      <div class="stat-value c-red" id="s-lowstock">—</div>
+    </div>
+  </div>
+
+  <!-- TWO COLUMNS -->
+  <div class="two-col">
+
+    <!-- LEFT: AUTOMATION RULES -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">⚡ Automation Rules</div>
+          <div class="section-sub">Toggle rules on/off · Run manually</div>
+        </div>
+      </div>
+      <div class="section-body" id="rules-list"></div>
+    </div>
+
+    <!-- RIGHT: ACTIVITY LOG -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📋 Activity Log</div>
+          <div class="section-sub">Real-time automation events</div>
+        </div>
+        <button class="btn-run" onclick="clearLog()">🗑 Clear</button>
+      </div>
+      <div class="section-body" id="activity-log">
+        <div class="empty-log">No activity yet — run a rule to see logs</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LOW STOCK LIVE CHECK -->
+  <div class="full-col">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🚨 Live Low Stock Alerts</div>
+          <div class="section-sub">Products below reorder level — pulled from database</div>
+        </div>
+        <button class="btn-run" id="btn-check-stock" onclick="checkLowStock()">🔄 Check Now</button>
+      </div>
+      <div class="section-body" id="low-stock-body">
+        <div class="empty-log">Click "Check Now" to scan inventory</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKFLOW DIAGRAMS -->
+  <div class="two-col">
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🔄 Low Stock Reorder Flow</div>
+          <div class="section-sub">n8n-compatible workflow steps</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="workflow">
+          <div class="wf-step"><div class="wf-label">Trigger</div><div class="wf-box wf-trigger">⏰ Every 1hr</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Check</div><div class="wf-box wf-check">📊 Stock &lt; Reorder</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Action</div><div class="wf-box wf-action">🛒 Create PO</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Notify</div><div class="wf-box wf-notify">📧 Email Admin</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🛒 Abandoned Cart Flow</div>
+          <div class="section-sub">n8n-compatible workflow steps</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="workflow">
+          <div class="wf-step"><div class="wf-label">Trigger</div><div class="wf-box wf-trigger">🛒 Cart Idle 30m</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Check</div><div class="wf-box wf-check">💳 Not Purchased</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Action</div><div class="wf-box wf-action">🎁 Apply Coupon</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Notify</div><div class="wf-box wf-notify">📱 SMS / Email</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">⭐ VIP Upgrade Flow</div>
+          <div class="section-sub">n8n-compatible workflow steps</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="workflow">
+          <div class="wf-step"><div class="wf-label">Trigger</div><div class="wf-box wf-trigger">✅ Order Complete</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Check</div><div class="wf-box wf-check">💰 Spent &gt; $500</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Action</div><div class="wf-box wf-action">⭐ Set VIP Tag</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Notify</div><div class="wf-box wf-notify">🎉 Welcome Email</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📈 Sales Report Flow</div>
+          <div class="section-sub">n8n-compatible workflow steps</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="workflow">
+          <div class="wf-step"><div class="wf-label">Trigger</div><div class="wf-box wf-trigger">📅 Daily 8AM</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Check</div><div class="wf-box wf-check">🗄️ Query DB</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Action</div><div class="wf-box wf-action">📊 Build Report</div></div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step"><div class="wf-label">Notify</div><div class="wf-box wf-notify">📧 Send PDF</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- NEW RULE MODAL -->
+<div id="ruleModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-title">➕ Create Automation Rule</div>
+    <div class="modal-sub">Define a trigger, condition and action for your new rule</div>
+
+    <div class="form-group">
+      <label>Rule Name</label>
+      <input type="text" id="r-name" placeholder="e.g. Flash Sale Alert" />
+    </div>
+    <div class="form-group">
+      <label>Trigger</label>
+      <select id="r-trigger">
+        <option value="schedule">⏰ Scheduled (Every hour)</option>
+        <option value="order">✅ New Order Placed</option>
+        <option value="stock">📦 Stock Level Change</option>
+        <option value="customer">👤 New Customer Signup</option>
+        <option value="payment">💳 Payment Received</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Condition</label>
+      <select id="r-condition">
+        <option value="low_stock">Stock below reorder level</option>
+        <option value="high_value">Order value &gt; $500</option>
+        <option value="new_customer">Customer is new</option>
+        <option value="unpaid">Payment is unpaid</option>
+        <option value="always">Always (no condition)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Action</label>
+      <select id="r-action">
+        <option value="email">📧 Send Email Alert</option>
+        <option value="reorder">🛒 Create Reorder Request</option>
+        <option value="sms">📱 Send SMS</option>
+        <option value="tag_vip">⭐ Tag Customer as VIP</option>
+        <option value="log">📋 Log to Activity</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Description (optional)</label>
+      <textarea id="r-desc" rows="2" placeholder="What does this rule do?"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveRule()">✅ Save Rule</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = 'http://localhost:3000';
+
+  /* ── DEFAULT RULES ────────────────────────── */
+  let rules = JSON.parse(localStorage.getItem('auto_rules') || 'null') || [
+    { id:1, name:'Low Stock Reorder Alert',   icon:'📦', desc:'Checks inventory every hour. Sends alert if any product falls below reorder level.', trigger:'Schedule (Hourly)', action:'Email + Log', freq:'Hourly', active:true  },
+    { id:2, name:'Abandoned Cart Recovery',   icon:'🛒', desc:'Detects carts idle for 30+ minutes. Sends discount coupon via email to recover the sale.', trigger:'Cart Idle 30m',   action:'Email Coupon', freq:'Real-time', active:true  },
+    { id:3, name:'VIP Customer Upgrade',      icon:'⭐', desc:'Monitors customer total spend. Upgrades to VIP automatically when spend exceeds $500.', trigger:'Order Completed', action:'Tag + Welcome Email', freq:'On Event', active:true  },
+    { id:4, name:'Daily Sales Report',        icon:'📊', desc:'Generates a full sales report every morning at 8AM and sends PDF to admin email.', trigger:'Daily 8:00 AM',   action:'PDF Email Report', freq:'Daily', active:false },
+    { id:5, name:'New Customer Welcome',      icon:'👋', desc:'Triggers when a new customer registers. Sends a personalised welcome email with first-order discount.', trigger:'New Signup',      action:'Welcome Email', freq:'Real-time', active:true  },
+    { id:6, name:'Payment Overdue Alert',     icon:'💳', desc:'Checks for unpaid orders older than 24 hours. Sends reminder email to customer.', trigger:'Order Unpaid 24h', action:'Reminder Email', freq:'Daily', active:false },
+  ];
+
+  let logEntries = [];
+  let alertsFired = 0;
+
+  /* ── RENDER RULES ─────────────────────────── */
+  function renderRules() {
+    const active   = rules.filter(r => r.active).length;
+    const inactive = rules.filter(r => !r.active).length;
+    document.getElementById('s-active').textContent   = active;
+    document.getElementById('s-inactive').textContent = inactive;
+
+    const list = document.getElementById('rules-list');
+    list.innerHTML = rules.map(r => `
+      <div class="rule-card ${r.active ? 'active-rule' : 'inactive-rule'}">
+        <div class="rule-icon">${r.icon}</div>
+        <div class="rule-info">
+          <div class="rule-name">${r.name}</div>
+          <div class="rule-desc">${r.desc}</div>
+          <div class="rule-meta">
+            <span class="rule-tag tag-trigger">⚡ ${r.trigger}</span>
+            <span class="rule-tag tag-action">🎯 ${r.action}</span>
+            <span class="rule-tag tag-freq">🕐 ${r.freq}</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:center;flex-shrink:0">
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" ${r.active ? 'checked' : ''} onchange="toggleRule(${r.id}, this.checked)" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">${r.active ? 'ON' : 'OFF'}</span>
+          </div>
+          <button class="btn-run" onclick="runRule(${r.id})" ${!r.active ? 'disabled' : ''}>▶ Run</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function toggleRule(id, checked) {
+    rules = rules.map(r => r.id === id ? {...r, active: checked} : r);
+    saveRules();
+    addLog(checked ? 'green' : 'yellow',
+      checked ? `Rule "${rules.find(r=>r.id===id).name}" enabled` : `Rule "${rules.find(r=>r.id===id).name}" disabled`);
+    renderRules();
+  }
+
+  async function runRule(id) {
+    const r = rules.find(x => x.id === id);
+    if (!r || !r.active) return;
+
+    alertsFired++;
+    document.getElementById('s-fired').textContent = alertsFired;
+    addLog('blue', `▶ Running "${r.name}"...`);
+
+    // Map rule id to real backend endpoint
+    const endpoints = {
+      1: { url: '/api/automation/low-stock-alert', method: 'POST' },
+      4: { url: '/api/automation/daily-report',    method: 'POST' },
+    };
+
+    if (endpoints[id]) {
+      try {
+        const res  = await fetch(API_URL + endpoints[id].url, { method: endpoints[id].method });
+        const data = await res.json();
+        if (data.sent) {
+          addLog('green', `📧 Email sent successfully for "${r.name}"`);
+          showToast('📧 Email sent!');
+        } else {
+          addLog('yellow', `⚠️ Rule ran but no email needed: ${data.message || ''}`);
+        }
+      } catch (e) {
+        addLog('yellow', `⚠️ Backend not reachable — rule simulated locally`);
+        addLog('green', `✅ "${r.name}" simulated successfully`);
+      }
+    } else {
+      // Simulate for rules without a backend endpoint yet
+      setTimeout(() => addLog('green', `✅ "${r.name}" executed → ${r.action}`), 600);
+      setTimeout(() => showToast(`✅ ${r.name} triggered!`), 800);
+    }
+  }
+
+  /* ── LOG ──────────────────────────────────── */
+  function addLog(color, text) {
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    logEntries.unshift({ color, text, time });
+    if (logEntries.length > 50) logEntries.pop();
+    renderLog();
+  }
+
+  function renderLog() {
+    const el = document.getElementById('activity-log');
+    if (logEntries.length === 0) {
+      el.innerHTML = '<div class="empty-log">No activity yet — run a rule to see logs</div>';
+      return;
+    }
+    el.innerHTML = logEntries.map(e => `
+      <div class="log-entry">
+        <div class="log-dot log-dot-${e.color}"></div>
+        <div class="log-text">${e.text}</div>
+        <div class="log-time">${e.time}</div>
+      </div>`).join('');
+  }
+
+  function clearLog() { logEntries = []; renderLog(); }
+
+  /* ── LOW STOCK CHECK ──────────────────────── */
+  async function checkLowStock() {
+    const btn  = document.getElementById('btn-check-stock');
+    const body = document.getElementById('low-stock-body');
+    btn.textContent = '⏳ Scanning...'; btn.disabled = true;
+
+    addLog('blue', '🔍 Starting live inventory scan...');
+
+    try {
+      const res      = await fetch(`${API_URL}/api/products`);
+      const products = await res.json();
+      const low      = products.filter(p => parseInt(p.stock_quantity) < parseInt(p.reorder_level || 10));
+
+      document.getElementById('s-lowstock').textContent = low.length;
+
+      if (low.length === 0) {
+        body.innerHTML = `<div class="empty-log">✅ All products are well-stocked! No alerts needed.</div>`;
+        addLog('green', '✅ Inventory scan complete — all products sufficiently stocked');
+      } else {
+        body.innerHTML = low.map(p => `
+          <div class="alert-item">
+            <div>
+              <div class="alert-name">${p.name}</div>
+              <div class="alert-stock">Stock: ${p.stock_quantity} units · Reorder at: ${p.reorder_level || 10}</div>
+            </div>
+            <span class="alert-badge">⚠️ Low Stock</span>
+          </div>`).join('');
+        addLog('red', `🚨 ${low.length} product(s) below reorder level — action required!`);
+        low.forEach(p => addLog('yellow', `⚠️ "${p.name}" — only ${p.stock_quantity} left`));
+        alertsFired += low.length;
+        document.getElementById('s-fired').textContent = alertsFired;
+      }
+    } catch (e) {
+      body.innerHTML = `<div class="empty-log" style="color:#ef4444">❌ Cannot connect to backend. Start with <code>npm start</code></div>`;
+      addLog('red', '❌ Backend unreachable — inventory scan failed');
+    }
+
+    btn.textContent = '🔄 Check Now'; btn.disabled = false;
+  }
+
+  /* ── NEW RULE MODAL ───────────────────────── */
+  function openModal() { document.getElementById('ruleModal').classList.add('active'); }
+  function closeModal() { document.getElementById('ruleModal').classList.remove('active'); }
+
+  const triggerLabels = { schedule:'Schedule (Hourly)', order:'Order Placed', stock:'Stock Change', customer:'New Signup', payment:'Payment Received' };
+  const actionLabels  = { email:'Email Alert', reorder:'Reorder Request', sms:'SMS Notification', tag_vip:'Tag as VIP', log:'Activity Log' };
+  const icons = { schedule:'⏰', order:'✅', stock:'📦', customer:'👤', payment:'💳' };
+
+  function saveRule() {
+    const name = document.getElementById('r-name').value.trim();
+    if (!name) { alert('Please enter a rule name'); return; }
+
+    const trigger = document.getElementById('r-trigger').value;
+    const action  = document.getElementById('r-action').value;
+    const desc    = document.getElementById('r-desc').value || 'Custom automation rule';
+
+    const newRule = {
+      id: Date.now(), name, icon: icons[trigger] || '⚡',
+      desc, trigger: triggerLabels[trigger], action: actionLabels[action],
+      freq: trigger === 'schedule' ? 'Hourly' : 'Real-time', active: true
+    };
+
+    rules.push(newRule);
+    saveRules();
+    addLog('green', `➕ New rule "${name}" created and activated`);
+    closeModal();
+    renderRules();
+
+    // reset form
+    ['r-name','r-desc'].forEach(id => document.getElementById(id).value = '');
+  }
+
+  function saveRules() { localStorage.setItem('auto_rules', JSON.stringify(rules)); }
+
+  function showToast(msg) {
+    let t = document.getElementById('toast');
+    if (!t) {
+      t = document.createElement('div'); t.id = 'toast';
+      t.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:9999;
+        background:rgba(15,23,42,0.97);border:1px solid #22c55e;color:#e5e7eb;
+        padding:14px 22px;border-radius:12px;font-size:14px;font-weight:600;
+        box-shadow:0 8px 30px rgba(0,0,0,0.4);animation:slideUp 0.3s ease;display:none;`;
+      document.body.appendChild(t);
+    }
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.display = 'none'; }, 3000);
+  }
+
+  document.getElementById('ruleModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Show owner email in banner
+  // Show who receives alerts + register with backend
+  const ownerEmail = localStorage.getItem('owner_email') || localStorage.getItem('ownerEmail') || 'Not logged in';
+  const ownerName  = localStorage.getItem('owner_name')  || localStorage.getItem('ownerName')  || 'Owner';
+
+  // Init rules
+  renderRules();
+
+  // Update display if element exists
+  const ownerDisplay = document.getElementById('owner-email-display');
+  if (ownerDisplay) ownerDisplay.textContent = ownerEmail;
+
+  // Register with backend so alerts go to this email
+  if (ownerEmail && ownerEmail.includes('@')) {
+    fetch(API_URL + '/api/automation/set-owner', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email: ownerEmail })
+    }).catch(() => {});
+  }
+
+  addLog('blue',  `👤 Owner: ${ownerName} (${ownerEmail})`);
+  addLog('green', `📧 All alerts will be sent to: ${ownerEmail}`);
+  addLog('blue',  `🤖 Automation engine initialized — ${rules.filter(r=>r.active).length} rules active`);
+</script>
+</body>
+</html>

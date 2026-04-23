@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Account | Smart Retail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #182848 0, #02040f 55%, #000 100%);
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .app {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+    }
+
+    /* === Animated Smart Retail Scene === */
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .glow {
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(0, 153, 255, 0.35), transparent 60%);
+      filter: blur(4px);
+      top: 15%;
+      left: 10%;
+      animation: driftGlow 18s linear infinite alternate;
+    }
+
+    @keyframes driftGlow {
+      0%   { transform: translate3d(0, 0, 0); opacity: 0.7; }
+      100% { transform: translate3d(120px, 80px, 0); opacity: 0.4; }
+    }
+
+    .node {
+      position: absolute;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(5, 10, 25, 0.9);
+      border: 1px solid rgba(88, 152, 255, 0.3);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(16px);
+      font-size: 12px;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .node-emoji {
+      font-size: 18px;
+    }
+
+    .node-title {
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .node-sub {
+      font-size: 11px;
+      opacity: 0.75;
+    }
+
+    /* Positions + floating animation */
+
+    .node.product-1 {
+      top: 16%;
+      left: 14%;
+      animation: float1 12s ease-in-out infinite;
+    }
+
+    .node.product-2 {
+      top: 65%;
+      left: 12%;
+      animation: float2 16s ease-in-out infinite;
+    }
+
+    .node.product-3 {
+      top: 25%;
+      right: 12%;
+      animation: float3 14s ease-in-out infinite;
+    }
+
+    @keyframes float1 {
+      0%   { transform: translateY(0); }
+      50%  { transform: translateY(-18px); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes float2 {
+      0%   { transform: translateY(0); }
+      50%  { transform: translateY(22px); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes float3 {
+      0%   { transform: translateY(0); }
+      50%  { transform: translateY(-14px); }
+      100% { transform: translateY(0); }
+    }
+
+    /* Moving cart + truck */
+
+    .node.cart {
+      bottom: 18%;
+      right: 25%;
+      animation: cartMove 11s linear infinite;
+    }
+
+    @keyframes cartMove {
+      0%   { transform: translateX(0); opacity: 0; }
+      10%  { opacity: 1; }
+      60%  { transform: translateX(90px); opacity: 1; }
+      100% { transform: translateX(130px); opacity: 0; }
+    }
+
+    .node.truck {
+      bottom: 8%;
+      left: 20%;
+      animation: truckMove 13s linear infinite;
+    }
+
+    @keyframes truckMove {
+      0%   { transform: translateX(-160px); opacity: 0; }
+      10%  { opacity: 1; }
+      70%  { transform: translateX(120px); opacity: 1; }
+      100% { transform: translateX(240px); opacity: 0; }
+    }
+
+    /* Sales chart cluster */
+
+    .chart-cluster {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .bar {
+      width: 6px;
+      border-radius: 999px;
+      background: linear-gradient(to top, rgba(0, 123, 255, 0.4), #4fd1c5);
+      animation: bounceBars 1.2s ease-in-out infinite alternate;
+    }
+
+    .bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+    .bar:nth-child(2) { height: 18px; animation-delay: 0.1s; }
+    .bar:nth-child(3) { height: 26px; animation-delay: 0.2s; }
+    .bar:nth-child(4) { height: 14px; animation-delay: 0.3s; }
+    .bar:nth-child(5) { height: 32px; animation-delay: 0.4s; }
+    .bar:nth-child(6) { height: 22px; animation-delay: 0.5s; }
+
+    @keyframes bounceBars {
+      0%   { transform: scaleY(1); }
+      100% { transform: scaleY(1.6); }
+    }
+
+    /* Soft grid overlay */
+
+    .grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 120px 120px;
+      opacity: 0.35;
+      mix-blend-mode: screen;
+      animation: gridMove 40s linear infinite;
+    }
+
+    @keyframes gridMove {
+      0%   { background-position: 0 0, 0 0; }
+      100% { background-position: 200px 200px, 200px 200px; }
+    }
+
+    /* === Signup Card === */
+
+    .signup-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(360px, 90vw);
+      padding: 28px 26px 30px;
+      border-radius: 24px;
+      background: rgba(3, 7, 18, 0.94);
+      box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(148, 163, 184, 0.18);
+      backdrop-filter: blur(18px);
+      z-index: 10;
+    }
+
+    .signup-card h2 {
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 22px;
+      color: #e5e7eb;
+    }
+
+    .signup-card p.subtitle {
+      text-align: center;
+      font-size: 12px;
+      margin-bottom: 18px;
+      color: #9ca3af;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #e5e7eb;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 10px;
+      border: 1px solid rgba(156, 163, 175, 0.6);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      font-size: 13px;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .field input::placeholder {
+      color: #6b7280;
+    }
+
+    .field input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.6);
+      background: rgba(15, 23, 42, 1);
+    }
+
+    .signup-btn {
+      width: 100%;
+      padding: 11px 0;
+      margin-top: 6px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      background: linear-gradient(135deg, #2563eb, #22c55e);
+      color: #f9fafb;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.55);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+
+    .signup-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+      box-shadow: 0 14px 30px rgba(37, 99, 235, 0.7);
+    }
+
+    .signup-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.4);
+    }
+
+    .links {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .links a {
+      color: #60a5fa;
+      text-decoration: none;
+      margin: 0 4px;
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .node,
+      .chart-cluster,
+      .truck,
+      .cart,
+      .glow {
+        opacity: 0.35;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Animated Smart Retail Background -->
+    <div class="scene">
+      <div class="grid"></div>
+      <div class="glow" data-speed="2"></div>
+
+      <div class="chart-cluster" data-speed="3">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+
+      <div class="node product-1" data-speed="5">
+        <span class="node-emoji">👟</span>
+        <div>
+          <div class="node-title">Shoes +42%</div>
+          <div class="node-sub">Top trending product</div>
+        </div>
+      </div>
+
+      <div class="node product-2" data-speed="4">
+        <span class="node-emoji">🎧</span>
+        <div>
+          <div class="node-title">Headphones</div>
+          <div class="node-sub">Low stock · Auto-reorder</div>
+        </div>
+      </div>
+
+      <div class="node product-3" data-speed="6">
+        <span class="node-emoji">📱</span>
+        <div>
+          <div class="node-title">Mobiles</div>
+          <div class="node-sub">High-margin campaign live</div>
+        </div>
+      </div>
+
+      <div class="node cart" data-speed="7">
+        <span class="node-emoji">🛒</span>
+        <div>
+          <div class="node-title">Cart Automation</div>
+          <div class="node-sub">Abandoned cart recovery</div>
+        </div>
+      </div>
+
+      <div class="node truck" data-speed="3">
+        <span class="node-emoji">🚚</span>
+        <div>
+          <div class="node-title">Smart Delivery</div>
+          <div class="node-sub">ETA optimized by AI</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signup Card -->
+    <div class="signup-card">
+      <h2>Create Account</h2>
+      <p class="subtitle">Smart Retail Sales Analytics &amp; Automations</p>
+
+      <form onsubmit="handleSignup(event)">
+        <div class="field">
+          <label for="name">Full Name</label>
+          <input id="name" type="text" placeholder="Enter your full name" required />
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="Enter your email" required />
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="Create a password" required />
+        </div>
+
+        <div class="field">
+          <label for="confirm">Confirm Password</label>
+          <input id="confirm" type="password" placeholder="Re-enter your password" required />
+        </div>
+
+        <button class="signup-btn" type="submit">Create Account</button>
+      </form>
+
+      <div class="links">
+        Already have an account?
+        <a href="login.html">Login</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showError(msg) {
+      let el = document.getElementById('signup-error');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'signup-error';
+        el.style.cssText = 'color:#ef4444;font-size:13px;margin-top:8px;text-align:center;font-weight:600;';
+        document.querySelector('form').appendChild(el);
+      }
+      el.textContent = msg;
+    }
+    async function handleSignup(event) {
+      event.preventDefault();
+
+      const name     = document.getElementById("name").value.trim();
+      const email    = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirm  = document.getElementById("confirm").value;
+      const role     = 'admin'; // All signups are owner/admin
+
+      if (!name || !email || !password) { showError("❌ All fields are required!"); return; }
+      if (!email.includes('@'))          { showError("❌ Enter a valid email address"); return; }
+      if (password.length < 4)           { showError("❌ Password must be at least 4 characters"); return; }
+      if (password !== confirm)          { showError("❌ Passwords do not match!"); return; }
+
+      const btn = document.querySelector(".signup-btn");
+      btn.textContent = "Creating account...";
+      btn.disabled = true;
+
+      try {
+        const res  = await fetch("http://localhost:3000/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, role })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          // Also save locally as backup
+          localStorage.setItem("registered_user", JSON.stringify({ name, email, password }));
+
+          btn.textContent = '✅ Account Created!';
+          btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+          setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+        } else {
+          showError("❌ " + (data.message || "Registration failed"));
+          btn.textContent = "Create Account";
+          btn.disabled = false;
+        }
+      } catch (e) {
+        // Backend offline — save locally only
+        localStorage.setItem("registered_user", JSON.stringify({ name, email, password }));
+        btn.textContent = '✅ Account Created!';
+        btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+        setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+      }
+    }
+
+    // Simple parallax effect: background nodes move slightly with mouse
+    const parallaxNodes = document.querySelectorAll("[data-speed]");
+
+    document.addEventListener("mousemove", (() => {
+      const baseTransforms = new WeakMap();
+
+      return (e) => {
+        const { innerWidth, innerHeight } = window;
+        const x = (e.clientX - innerWidth / 2) / innerWidth;
+        const y = (e.clientY - innerHeight / 2) / innerHeight;
+
+        parallaxNodes.forEach((node) => {
+          if (!baseTransforms.has(node)) {
+            baseTransforms.set(node, getComputedStyle(node).transform === "none"
+              ? ""
+              : getComputedStyle(node).transform);
+          }
+          const base = baseTransforms.get(node);
+          const speed = parseFloat(node.getAttribute("data-speed")) || 1;
+          const tx = -x * speed * 16;
+          const ty = -y * speed * 16;
+          node.style.transform = `${base} translate3d(${tx}px, ${ty}px, 0)`;
+        });
+      };
+    })());
+  </script>
+</body>
+</html>

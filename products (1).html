@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Products - Smart Retail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --text: #e5e7eb;
+      --card: rgba(15,23,42,0.8);
+      --border: rgba(148,163,184,0.2);
+      --sidebar: rgba(15,23,42,0.95);
+      --accent: #3b82f6;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--bg, #0a0e1a) !important;
+      color: var(--text, #e5e7eb) !important;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 260px;
+      background: rgba(15, 23, 42, 0.95);
+      border-right: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 24px 0;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .sidebar-header h2 {
+      font-size: 20px;
+      background: linear-gradient(135deg, #3b82f6, #22c55e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-menu {
+      margin-top: 24px;
+      padding: 0 12px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      margin-bottom: 4px;
+      border-radius: 10px;
+      color: #94a3b8;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+
+    .nav-item.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+      font-weight: 600;
+    }
+
+    .main-content {
+      margin-left: 260px;
+      padding: 24px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding: 20px 24px;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .btn-primary {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #3b82f6, #22c55e);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .product-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .product-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin-bottom: 8px;
+    }
+
+    .product-category {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(59, 130, 246, 0.2);
+      border-radius: 12px;
+      color: #3b82f6;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .product-price {
+      font-size: 28px;
+      font-weight: 700;
+      color: #22c55e;
+      margin: 16px 0;
+    }
+
+    .product-stock {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .stock-label {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .stock-value {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .stock-badge {
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .stock-low {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .stock-ok {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .product-description {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      min-height: 40px;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-edit {
+      flex: 1;
+      padding: 10px;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid #3b82f6;
+      border-radius: 8px;
+      color: #3b82f6;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-edit:hover {
+      background: rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-delete {
+      flex: 1;
+      padding: 10px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      border-radius: 8px;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-delete:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: rgba(15, 23, 42, 0.98);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 20px;
+      padding: 32px;
+      width: min(500px, 90vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #e5e7eb;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #94a3b8;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 8px;
+      color: #e5e7eb;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      padding: 12px;
+      background: rgba(148, 163, 184, 0.2);
+      border: 1px solid #94a3b8;
+      border-radius: 8px;
+      color: #94a3b8;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+      background: rgba(148, 163, 184, 0.3);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+      font-size: 16px;
+    }
+
+    .connection-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-connected {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .status-disconnected {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Delete Confirmation Modal */
+    .confirm-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+    .confirm-modal.active { display: flex; }
+
+    .confirm-box {
+      background: rgba(15, 23, 42, 0.98);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 20px;
+      padding: 36px 32px 28px;
+      width: min(420px, 90vw);
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(239,68,68,0.15);
+      animation: popIn 0.22s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.88); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+
+    .confirm-icon { font-size: 52px; margin-bottom: 14px; }
+    .confirm-title { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px; }
+    .confirm-msg { font-size: 14px; color: #94a3b8; margin-bottom: 6px; line-height: 1.6; }
+    .confirm-name { font-size: 15px; font-weight: 600; color: #ef4444; margin-bottom: 28px; }
+
+    .confirm-actions { display: flex; gap: 12px; }
+
+    .btn-confirm-cancel {
+      flex: 1; padding: 12px;
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 10px; color: #94a3b8;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-confirm-cancel:hover { background: rgba(148,163,184,0.2); color: #e5e7eb; }
+
+    .btn-confirm-delete {
+      flex: 1; padding: 12px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid #ef4444;
+      border-radius: 10px; color: #ef4444;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-confirm-delete:hover { background: #ef4444; color: white; }
+  </style>
+</head>
+<body>
+<script>
+(function(){
+  const s = JSON.parse(localStorage.getItem('smart_retail_settings')||'{}');
+  const theme  = s.theme  || 'dark';
+  const accent = s.accent || '#3b82f6';
+  if(theme==='light'){
+    document.documentElement.style.setProperty('--bg','#f1f5f9');
+    document.documentElement.style.setProperty('--text','#0f172a');
+    document.documentElement.style.setProperty('--card','#ffffff');
+    document.documentElement.style.setProperty('--border','#e2e8f0');
+    document.documentElement.style.setProperty('--sidebar','rgba(241,245,249,0.98)');
+  } else if(theme==='blue'){
+    document.documentElement.style.setProperty('--bg','#0d1f3c');
+    document.documentElement.style.setProperty('--text','#e5e7eb');
+    document.documentElement.style.setProperty('--card','rgba(13,31,60,0.9)');
+    document.documentElement.style.setProperty('--border','rgba(59,130,246,0.2)');
+    document.documentElement.style.setProperty('--sidebar','rgba(10,20,50,0.98)');
+  } else {
+    document.documentElement.style.setProperty('--bg','#0a0e1a');
+    document.documentElement.style.setProperty('--text','#e5e7eb');
+    document.documentElement.style.setProperty('--card','rgba(15,23,42,0.8)');
+    document.documentElement.style.setProperty('--border','rgba(148,163,184,0.2)');
+    document.documentElement.style.setProperty('--sidebar','rgba(15,23,42,0.95)');
+  }
+  document.documentElement.style.setProperty('--accent', accent);
+})();
+</script>
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Smart Retail</h2>
+    </div>
+    
+    <nav class="nav-menu">
+      <a href="dashboard_dynamic.html" class="nav-item">
+        <span>📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="products.html" class="nav-item active">
+        <span>📦</span>
+        <span>Products</span>
+      </a>
+      <a href="orders.html" class="nav-item">
+        <span>🛒</span>
+        <span>Orders</span>
+      </a>
+      <a href="customers.html" class="nav-item">
+        <span>👥</span>
+        <span>Customers</span>
+      </a>
+      <a href="automation.html" class="nav-item">
+        <span>🤖</span>
+        <span>Automation</span>
+      </a>
+      <a href="dashboard_analytics.html" class="nav-item">
+        <span>📈</span>
+        <span>Analytics</span>
+      </a>
+      <a href="settings.html" class="nav-item">
+        <span>⚙️</span>
+        <span>Settings</span>
+      </a>
+      <a href="index.html" class="nav-item">
+        <span>🚪</span>
+        <span>Logout</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <div>
+        <h1>📦 Products Management</h1>
+        <p id="product-count">Loading products...</p>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <div id="connection-status" class="connection-status status-disconnected">
+          <span class="status-dot"></span>
+          <span>Connecting...</span>
+        </div>
+        <button class="btn-primary" onclick="openAddModal()">
+          ➕ Add New Product
+        </button>
+      </div>
+    </div>
+
+    <div id="products-grid" class="products-grid">
+      <div class="loading">
+        <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+        Loading products from database...
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">➕ Add New Product</div>
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="productName" placeholder="e.g., Wireless Mouse" required>
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="productCategory" required>
+            <option value="">Select category...</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Footwear">Footwear</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Sports">Sports</option>
+            <option value="Office">Office</option>
+            <option value="Clothing">Clothing</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Price ($) *</label>
+          <input type="number" step="0.01" min="0" id="productPrice" placeholder="0.00" required>
+        </div>
+        <div class="form-group">
+          <label>Stock Quantity *</label>
+          <input type="number" min="0" id="productStock" placeholder="0" required>
+        </div>
+        <div class="form-group">
+          <label>Reorder Level</label>
+          <input type="number" min="0" id="productReorder" value="10" placeholder="10">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="productDescription" placeholder="Product description..." rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-primary" style="flex: 1;">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Custom Delete Confirmation Modal -->
+  <div id="confirmModal" class="confirm-modal">
+    <div class="confirm-box">
+      <div class="confirm-icon">🗑️</div>
+      <div class="confirm-title">Delete Product</div>
+      <div class="confirm-msg">You are about to permanently delete</div>
+      <div class="confirm-name" id="confirm-product-name"></div>
+      <div class="confirm-actions">
+        <button class="btn-confirm-cancel" onclick="closeConfirmModal()">Cancel</button>
+        <button class="btn-confirm-delete" id="confirm-delete-btn">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+    function getCurrencySymbol() {
+      if (!localStorage.getItem('currency_symbol')) {
+        localStorage.setItem('currency_symbol', '₹');
+        localStorage.setItem('currency_rate', '1');
+      }
+      // Fix wrong rate if it was previously set to 1 for INR
+      const sym = localStorage.getItem('currency_symbol') || '₹';
+      const rate = parseFloat(localStorage.getItem('currency_rate') || '1');
+      if (sym === '₹' && rate < 1) {
+        localStorage.setItem('currency_rate', '1');
+      }
+      return sym;
+    }
+    function getCurrencyRate() {
+      return parseFloat(localStorage.getItem('currency_rate') || '1');
+    }
+    function formatCurrency(amount) {
+      const sym  = getCurrencySymbol();
+      const rate = getCurrencyRate();
+      const val  = parseFloat(String(amount).replace(/[^0-9.]/g,'')) || 0;
+      const converted = val * rate;
+      return sym + converted.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+
+    // Update connection status
+    function updateConnectionStatus(connected) {
+      const statusEl = document.getElementById('connection-status');
+      const dot = statusEl.querySelector('.status-dot');
+      const text = statusEl.querySelector('span:last-child');
+      
+      if (connected) {
+        statusEl.className = 'connection-status status-connected';
+        dot.style.background = '#22c55e';
+        text.textContent = 'Connected';
+      } else {
+        statusEl.className = 'connection-status status-disconnected';
+        dot.style.background = '#ef4444';
+        text.textContent = 'Disconnected';
+      }
+    }
+
+    // Load products from database
+    async function loadProducts() {
+      try {
+        const response = await fetch(`${API_URL}/api/products`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        
+        const products = await response.json();
+        const grid = document.getElementById('products-grid');
+        
+        document.getElementById('product-count').textContent = 
+          `${products.length} ${products.length === 1 ? 'product' : 'products'} in inventory`;
+        
+        if (products.length === 0) {
+          grid.innerHTML = `
+            <div class="loading">
+              <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+              No products found. Add your first product!
+            </div>
+          `;
+          updateConnectionStatus(true);
+          return;
+        }
+        
+        grid.innerHTML = products.map(p => `
+          <div class="product-card">
+            <div class="product-header">
+              <div>
+                <div class="product-name">${p.name}</div>
+                <span class="product-category">${p.category}</span>
+              </div>
+            </div>
+            <div class="product-price">${formatCurrency(parseFloat(p.price).toFixed(2))}</div>
+            <div class="product-stock">
+              <span class="stock-label">Stock:</span>
+              <div>
+                <span class="stock-value">${p.stock_quantity} units</span>
+                <span class="stock-badge ${p.stock_quantity < p.reorder_level ? 'stock-low' : 'stock-ok'}">
+                  ${p.stock_quantity < p.reorder_level ? '⚠️ Low Stock' : '✓ In Stock'}
+                </span>
+              </div>
+            </div>
+            <div class="product-description">
+              ${p.description || 'No description available'}
+            </div>
+            <div class="product-actions">
+              <button class="btn-edit" onclick="editProduct(${p.product_id})">
+                ✏️ Edit
+              </button>
+              <button class="btn-delete" onclick="deleteProduct(${p.product_id}, '${p.name.replace(/'/g, "\\'")}')">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        `).join('');
+        
+        updateConnectionStatus(true);
+      } catch (error) {
+        console.error('Error loading products:', error);
+        document.getElementById('products-grid').innerHTML = `
+          <div class="loading" style="color: #ef4444;">
+            <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+            <div style="margin-bottom: 8px;">Error loading products</div>
+            <div style="font-size: 14px; opacity: 0.8;">Make sure the backend is running on port 3000</div>
+            <div style="margin-top: 16px;">
+              <button class="btn-primary" onclick="loadProducts()">Retry</button>
+            </div>
+          </div>
+        `;
+        updateConnectionStatus(false);
+      }
+    }
+
+    // Open add product modal
+    function openAddModal() {
+      editingProductId = null;
+      document.getElementById('productModal').classList.add('active');
+      document.getElementById('productForm').reset();
+      document.querySelector('.modal-header').textContent = '➕ Add New Product';
+    }
+
+    // Close modal
+    function closeModal() {
+      editingProductId = null;
+      document.getElementById('productModal').classList.remove('active');
+    }
+
+    // Save product — POST for new, PUT for edit
+    async function saveProduct(event) {
+      event.preventDefault();
+
+      const data = {
+        name: document.getElementById('productName').value,
+        category: document.getElementById('productCategory').value,
+        price: parseFloat(document.getElementById('productPrice').value),
+        stock_quantity: parseInt(document.getElementById('productStock').value),
+        reorder_level: parseInt(document.getElementById('productReorder').value) || 10,
+        description: document.getElementById('productDescription').value
+      };
+
+      const isEditing = editingProductId !== null;
+      const url    = isEditing ? `${API_URL}/api/products/${editingProductId}` : `${API_URL}/api/products`;
+      const method = isEditing ? 'PUT' : 'POST';
+
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          showToast(isEditing ? `✅ "${data.name}" updated!` : `✅ "${data.name}" added!`);
+          closeModal();
+          loadProducts();
+        } else {
+          const error = await response.json();
+          alert('❌ Error: ' + (error.message || error.error || 'Unknown error'));
+        }
+      } catch (error) {
+        alert('❌ Error: ' + error.message);
+      }
+    }
+
+    // Track which product is being edited
+    let editingProductId = null;
+
+    // Edit product — loads existing data into the modal form
+    async function editProduct(id) {
+      try {
+        const response = await fetch(`${API_URL}/api/products`);
+        const products = await response.json();
+        const p = products.find(x => x.product_id === id);
+        if (!p) { alert('Product not found!'); return; }
+
+        editingProductId = id;
+        document.querySelector('.modal-header').textContent = '✏️ Edit Product';
+        document.getElementById('productName').value      = p.name;
+        document.getElementById('productCategory').value  = p.category;
+        document.getElementById('productPrice').value     = parseFloat(p.price).toFixed(2);
+        document.getElementById('productStock').value     = p.stock_quantity;
+        document.getElementById('productReorder').value   = p.reorder_level || 10;
+        document.getElementById('productDescription').value = p.description || '';
+        document.getElementById('productModal').classList.add('active');
+      } catch (err) {
+        alert('❌ Failed to load product data: ' + err.message);
+      }
+    }
+
+    // Custom delete confirmation modal
+    function openConfirmModal(id, name) {
+      document.getElementById('confirm-product-name').textContent = `"${name}"`;
+      document.getElementById('confirmModal').classList.add('active');
+      const btn = document.getElementById('confirm-delete-btn');
+      // Remove old listener and attach fresh one
+      btn.replaceWith(btn.cloneNode(true));
+      document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+        closeConfirmModal();
+        performDelete(id, name);
+      });
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('active');
+    }
+
+    // Delete product — calls DELETE /api/products/:id
+    async function deleteProduct(id, name) {
+      openConfirmModal(id, name);
+    }
+
+    async function performDelete(id, name) {
+      try {
+        const response = await fetch(`${API_URL}/api/products/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          showToast(`🗑️ "${name}" deleted successfully`);
+          loadProducts();
+        } else {
+          const err = await response.json();
+          alert('❌ Error deleting product: ' + (err.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('❌ Failed to connect to backend: ' + err.message);
+      }
+    }
+
+    // Close confirm modal on backdrop click
+    document.getElementById('confirmModal').addEventListener('click', function(e) {
+      if (e.target === this) closeConfirmModal();
+    });
+
+    // Toast notification
+    function showToast(msg) {
+      let t = document.getElementById('toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast';
+        t.style.cssText = `
+          position:fixed; bottom:28px; right:28px; z-index:9999;
+          background:rgba(15,23,42,0.97); border:1px solid #22c55e;
+          color:#e5e7eb; padding:14px 22px; border-radius:12px;
+          font-size:14px; font-weight:600; box-shadow:0 8px 30px rgba(0,0,0,0.4);
+          animation:slideUp 0.3s ease; display:none;
+        `;
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    // Close modal on outside click
+    document.getElementById('productModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProducts();
+      console.log('📦 Products page loaded!');
+      console.log('🔌 Connecting to API:', API_URL);
+    });
+  </script>
+
+</body>
+</html>

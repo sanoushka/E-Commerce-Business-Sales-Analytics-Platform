@@ -1,0 +1,907 @@
+F<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Settings - Smart Retail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { background: #0a0e1a; color: #e5e7eb; min-height: 100vh; }
+
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: rgba(15,23,42,0.95); border-right: 1px solid rgba(148,163,184,0.2); padding: 24px 0; backdrop-filter: blur(10px); z-index: 100; }
+    .sidebar-header { padding: 0 24px 24px; border-bottom: 1px solid rgba(148,163,184,0.2); }
+    .sidebar-header h2 { font-size: 20px; background: linear-gradient(135deg,#3b82f6,#22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-menu { margin-top: 24px; padding: 0 12px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 4px; border-radius: 10px; color: #94a3b8; text-decoration: none; cursor: pointer; transition: all 0.2s; }
+    .nav-item:hover { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .nav-item.active { background: rgba(59,130,246,0.15); color: #3b82f6; font-weight: 600; }
+
+    .main-content { margin-left: 260px; padding: 24px; }
+
+    /* HEADER */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; padding: 20px 24px; background: rgba(15,23,42,0.6); border-radius: 16px; border: 1px solid rgba(148,163,184,0.2); }
+    .header h1 { font-size: 22px; font-weight: 700; }
+    .header p { color: #64748b; font-size: 13px; margin-top: 4px; }
+    .btn-save-all { padding: 11px 26px; background: linear-gradient(135deg,#3b82f6,#22c55e); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-save-all:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* LAYOUT */
+    .settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; }
+
+    /* TABS SIDEBAR */
+    .tabs { background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.15); border-radius: 16px; padding: 12px; height: fit-content; position: sticky; top: 24px; }
+    .tab-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px; cursor: pointer; font-size: 14px; color: #94a3b8; transition: all 0.2s; margin-bottom: 2px; }
+    .tab-item:hover { background: rgba(59,130,246,0.1); color: #60a5fa; }
+    .tab-item.active { background: rgba(59,130,246,0.18); color: #3b82f6; font-weight: 600; }
+    .tab-icon { font-size: 16px; }
+
+    /* SECTIONS */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .card { background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.15); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+    .card-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .card-sub { font-size: 13px; color: #64748b; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(148,163,184,0.1); }
+
+    /* PROFILE */
+    .avatar-section { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; }
+    .avatar-big { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg,#3b82f6,#8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: white; flex-shrink: 0; }
+    .avatar-info h3 { font-size: 18px; font-weight: 700; }
+    .avatar-info p { color: #64748b; font-size: 13px; margin-top: 3px; }
+    .btn-change-avatar { margin-top: 10px; padding: 7px 16px; background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; border-radius: 8px; color: #3b82f6; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-change-avatar:hover { background: #3b82f6; color: white; }
+
+    /* FORM */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
+    .form-group input, .form-group select, .form-group textarea { padding: 11px 14px; background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); border-radius: 10px; color: #e5e7eb; font-size: 14px; transition: all 0.2s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #3b82f6; background: rgba(30,41,59,1); }
+    .form-group select option { background: #0f172a; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input[readonly] { opacity: 0.5; cursor: not-allowed; }
+
+    /* TOGGLE ROW */
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(148,163,184,0.07); }
+    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .toggle-label h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .toggle-label p { font-size: 12px; color: #64748b; }
+    .toggle { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: rgba(148,163,184,0.2); border-radius: 26px; cursor: pointer; transition: 0.3s; }
+    .slider::before { content:''; position:absolute; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; }
+    input:checked + .slider { background: #22c55e; }
+    input:checked + .slider::before { transform: translateX(20px); }
+
+    /* APPEARANCE */
+    .theme-options { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+    .theme-card { border: 2px solid rgba(148,163,184,0.15); border-radius: 12px; padding: 16px; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .theme-card:hover { border-color: #3b82f6; }
+    .theme-card.selected { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
+    .theme-preview { height: 50px; border-radius: 8px; margin-bottom: 10px; }
+    .theme-dark  { background: linear-gradient(135deg,#0a0e1a,#1e293b); }
+    .theme-light { background: linear-gradient(135deg,#f8fafc,#e2e8f0); }
+    .theme-blue  { background: linear-gradient(135deg,#1e3a5f,#2563eb); }
+    .theme-name { font-size: 13px; font-weight: 600; }
+    .theme-check { color: #22c55e; font-size: 16px; margin-top: 4px; display: none; }
+    .theme-card.selected .theme-check { display: block; }
+
+    .accent-options { display: flex; gap: 12px; margin-top: 16px; }
+    .accent-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
+    .accent-dot:hover, .accent-dot.selected { border-color: white; transform: scale(1.15); }
+
+    /* SYSTEM INFO */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .info-item { background: rgba(30,41,59,0.5); border-radius: 10px; padding: 14px 16px; }
+    .info-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .info-value { font-size: 14px; font-weight: 600; color: #e5e7eb; }
+    .info-value.green { color: #22c55e; }
+    .info-value.blue  { color: #3b82f6; }
+
+    /* DANGER ZONE */
+    .danger-card { background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+    .danger-title { font-size: 16px; font-weight: 700; color: #ef4444; margin-bottom: 4px; }
+    .danger-sub { font-size: 13px; color: #64748b; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(239,68,68,0.1); }
+    .danger-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(239,68,68,0.07); }
+    .danger-row:last-child { border-bottom: none; }
+    .danger-row-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .danger-row-info p { font-size: 12px; color: #64748b; }
+    .btn-danger { padding: 8px 18px; background: rgba(239,68,68,0.15); border: 1px solid #ef4444; border-radius: 8px; color: #ef4444; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-danger:hover { background: #ef4444; color: white; }
+
+    /* EMAIL CONFIG */
+    .email-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 20px; }
+    .email-status.configured { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .email-status.not-configured { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+    .btn-test-email { padding: 10px 20px; background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; border-radius: 10px; color: #3b82f6; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 16px; }
+    .btn-test-email:hover { background: #3b82f6; color: white; }
+
+    /* SAVE BTN */
+    .section-save { display: flex; justify-content: flex-end; margin-top: 20px; }
+    .btn-section-save { padding: 11px 28px; background: linear-gradient(135deg,#3b82f6,#22c55e); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-section-save:hover { opacity: 0.88; }
+
+    /* TOAST */
+    @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* STATS ROW */
+    .quick-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+    .qs { background: rgba(30,41,59,0.5); border-radius: 12px; padding: 16px; text-align: center; }
+    .qs-val { font-size: 22px; font-weight: 700; }
+    .qs-label { font-size: 11px; color: #64748b; margin-top: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header"><h2>Smart Retail</h2></div>
+  <nav class="nav-menu">
+    <a href="dashboard_dynamic.html" class="nav-item"><span>📊</span><span>Dashboard</span></a>
+    <a href="products.html"          class="nav-item"><span>📦</span><span>Products</span></a>
+    <a href="orders.html"            class="nav-item"><span>🛒</span><span>Orders</span></a>
+    <a href="customers.html"         class="nav-item"><span>👥</span><span>Customers</span></a>
+    <a href="automation.html"        class="nav-item"><span>🤖</span><span>Automation</span></a>
+    <a href="dashboard_analytics.html" class="nav-item"><span>📈</span><span>Analytics</span></a>
+    <a href="settings.html"          class="nav-item active"><span>⚙️</span><span>Settings</span></a>
+    <a href="index.html"             class="nav-item"><span>🚪</span><span>Logout</span></a>
+  </nav>
+</div>
+
+<div class="main-content">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>⚙️ Settings</h1>
+      <p>Manage your account, notifications and system preferences</p>
+    </div>
+    <button class="btn-save-all" onclick="saveAll()">💾 Save All Changes</button>
+  </div>
+
+  <div class="settings-layout">
+
+    <!-- LEFT TABS -->
+    <div class="tabs">
+      <div class="tab-item active" onclick="switchTab('profile')"><span class="tab-icon">👤</span> Profile</div>
+      <div class="tab-item" onclick="switchTab('notifications')"><span class="tab-icon">🔔</span> Notifications</div>
+      <div class="tab-item" onclick="switchTab('appearance')"><span class="tab-icon">🎨</span> Appearance</div>
+      <div class="tab-item" onclick="switchTab('email')"><span class="tab-icon">📧</span> Email</div>
+      <div class="tab-item" onclick="switchTab('system')"><span class="tab-icon">🖥️</span> System</div>
+      <div class="tab-item" onclick="switchTab('danger')"><span class="tab-icon">⚠️</span> Danger Zone</div>
+    </div>
+
+    <!-- RIGHT CONTENT -->
+    <div>
+
+      <!-- PROFILE -->
+      <div id="tab-profile" class="section active">
+        <div class="card">
+          <div class="card-title">👤 Profile Information</div>
+          <div class="card-sub">Update your personal details and account info</div>
+
+          <div class="avatar-section">
+            <div class="avatar-big" id="profile-avatar">A</div>
+            <div class="avatar-info">
+              <h3 id="profile-display-name">Admin User</h3>
+              <p id="profile-display-email">admin@smartretail.com</p>
+              <button class="btn-change-avatar" onclick="changeAvatar()">📷 Change Photo</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="p-name" placeholder="Your full name" />
+            </div>
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" id="p-username" placeholder="@username" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="p-email" placeholder="your@email.com" />
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" id="p-phone" placeholder="+91 9876543210" />
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Role</label>
+              <input type="text" id="p-role" value="Store Administrator" readonly />
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Bio</label>
+              <textarea id="p-bio" placeholder="Short description about yourself..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🔐 Change Password</div>
+          <div class="card-sub">Keep your account secure with a strong password</div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Current Password</label>
+              <input type="password" id="p-old-pass" placeholder="Enter current password" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>New Password</label>
+              <input type="password" id="p-new-pass" placeholder="Min 8 characters" />
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input type="password" id="p-confirm-pass" placeholder="Repeat new password" />
+            </div>
+          </div>
+          <div class="section-save">
+            <button class="btn-section-save" onclick="saveProfile()">💾 Save Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div id="tab-notifications" class="section">
+        <div class="card">
+          <div class="card-title">🔔 Email Notifications</div>
+          <div class="card-sub">Choose which alerts you want to receive by email</div>
+
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>🚨 Low Stock Alerts</h4>
+              <p>Get notified when products fall below reorder level</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="n-lowstock" checked /><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>🛒 New Order Placed</h4>
+              <p>Email when a customer places a new order</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="n-neworder" checked /><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>👤 New Customer Signup</h4>
+              <p>Alert when a new user registers on the platform</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="n-signup" checked /><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>📊 Daily Sales Report</h4>
+              <p>Receive daily summary of sales every morning at 8AM</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="n-daily" /><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>💳 Payment Alerts</h4>
+              <p>Notify when payments are received or overdue</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="n-payment" checked /><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🖥️ In-App Notifications</div>
+          <div class="card-sub">Control alerts inside the dashboard</div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>🔔 Browser Notifications</h4>
+              <p>Show desktop pop-ups for important events</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="n-browser" /><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>🔊 Sound Alerts</h4>
+              <p>Play a sound when new orders arrive</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="n-sound" /><span class="slider"></span></label>
+          </div>
+          <div class="section-save">
+            <button class="btn-section-save" onclick="saveNotifications()">💾 Save Notifications</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPEARANCE -->
+      <div id="tab-appearance" class="section">
+        <div class="card">
+          <div class="card-title">🎨 Theme</div>
+          <div class="card-sub">Choose your preferred dashboard theme</div>
+          <div class="theme-options">
+            <div class="theme-card selected" data-theme="dark" onclick="selectTheme(this,'dark')">
+              <div class="theme-preview theme-dark"></div>
+              <div class="theme-name">Dark</div>
+              <div class="theme-check">✓ Selected</div>
+            </div>
+            <div class="theme-card" data-theme="light" onclick="selectTheme(this,'light')">
+              <div class="theme-preview theme-light"></div>
+              <div class="theme-name">Light</div>
+              <div class="theme-check">✓ Selected</div>
+            </div>
+            <div class="theme-card" data-theme="blue" onclick="selectTheme(this,'blue')">
+              <div class="theme-preview theme-blue"></div>
+              <div class="theme-name">Ocean Blue</div>
+              <div class="theme-check">✓ Selected</div>
+            </div>
+          </div>
+
+          <div class="card-title" style="margin-top:8px">🎨 Accent Color</div>
+          <div style="font-size:13px;color:#64748b;margin:6px 0 12px">Pick a primary accent color for buttons and highlights</div>
+          <div class="accent-options">
+            <div class="accent-dot selected" style="background:#3b82f6" data-color="#3b82f6" onclick="selectAccent(this,'#3b82f6')" title="Blue"></div>
+            <div class="accent-dot" style="background:#22c55e" data-color="#22c55e" onclick="selectAccent(this,'#22c55e')" title="Green"></div>
+            <div class="accent-dot" style="background:#8b5cf6" data-color="#8b5cf6" onclick="selectAccent(this,'#8b5cf6')" title="Purple"></div>
+            <div class="accent-dot" style="background:#f59e0b" data-color="#f59e0b" onclick="selectAccent(this,'#f59e0b')" title="Amber"></div>
+            <div class="accent-dot" style="background:#ef4444" data-color="#ef4444" onclick="selectAccent(this,'#ef4444')" title="Red"></div>
+            <div class="accent-dot" style="background:#06b6d4" data-color="#06b6d4" onclick="selectAccent(this,'#06b6d4')" title="Cyan"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🔤 Display Preferences</div>
+          <div class="card-sub">Adjust how information is displayed</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date Format</label>
+              <select id="a-date">
+                <option>DD/MM/YYYY</option>
+                <option>MM/DD/YYYY</option>
+                <option>YYYY-MM-DD</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Currency</label>
+              <select id="a-currency">
+                <option>₹ INR</option>
+                <option>$ USD</option>
+                <option>€ EUR</option>
+                <option>£ GBP</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Language</label>
+              <select id="a-lang">
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Spanish</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Items Per Page</label>
+              <select id="a-perpage">
+                <option>10</option>
+                <option>25</option>
+                <option>50</option>
+              </select>
+            </div>
+          </div>
+          <div class="section-save">
+            <button class="btn-section-save" onclick="saveAppearance()">💾 Save Appearance</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMAIL -->
+      <div id="tab-email" class="section">
+        <div class="card">
+          <div class="card-title">📧 Email Configuration</div>
+          <div class="card-sub">Configure the Gmail account used to send automated emails</div>
+
+          <div class="email-status not-configured" id="email-status-badge">
+            ⚠️ Not Configured
+          </div>
+
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Sender Gmail Address</label>
+              <input type="email" id="e-gmail" placeholder="yourgmail@gmail.com" oninput="checkEmailStatus()" />
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Gmail App Password</label>
+              <input type="password" id="e-apppass" placeholder="16-character app password" oninput="checkEmailStatus()" />
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Admin / Owner Email (receives all alerts)</label>
+              <input type="email" id="e-admin" placeholder="owner@email.com" />
+            </div>
+          </div>
+
+          <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:16px;margin-top:4px">
+            <div style="font-size:13px;font-weight:700;color:#60a5fa;margin-bottom:8px">📋 How to get Gmail App Password:</div>
+            <div style="font-size:12px;color:#94a3b8;line-height:1.8">
+              1. Go to <strong style="color:#e5e7eb">myaccount.google.com</strong><br>
+              2. Security → Enable <strong style="color:#e5e7eb">2-Step Verification</strong><br>
+              3. Search <strong style="color:#e5e7eb">"App Passwords"</strong><br>
+              4. Select "Mail" → Generate → Copy the 16-char password
+            </div>
+          </div>
+
+          <button class="btn-test-email" onclick="testEmail()">📨 Send Test Email</button>
+
+          <div class="section-save" style="margin-top:16px">
+            <button class="btn-section-save" onclick="saveEmail()">💾 Save Email Config</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM -->
+      <div id="tab-system" class="section">
+        <div class="card">
+          <div class="card-title">🖥️ System Information</div>
+          <div class="card-sub">Current platform and backend status</div>
+
+          <div class="quick-stats">
+            <div class="qs">
+              <div class="qs-val" id="sys-products" style="color:#3b82f6">—</div>
+              <div class="qs-label">Total Products</div>
+            </div>
+            <div class="qs">
+              <div class="qs-val" id="sys-orders" style="color:#22c55e">—</div>
+              <div class="qs-label">Total Orders</div>
+            </div>
+            <div class="qs">
+              <div class="qs-val" id="sys-customers" style="color:#a78bfa">—</div>
+              <div class="qs-label">Total Customers</div>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">App Name</div>
+              <div class="info-value">Smart Retail Analytics</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Version</div>
+              <div class="info-value blue">v2.0.0</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Backend</div>
+              <div class="info-value" id="sys-backend">Checking...</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Database</div>
+              <div class="info-value" id="sys-db">Checking...</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Backend URL</div>
+              <div class="info-value blue">localhost:3000</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Last Login</div>
+              <div class="info-value" id="sys-login">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Logged In As</div>
+              <div class="info-value green" id="sys-owner">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Node Environment</div>
+              <div class="info-value">Production</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🔧 System Actions</div>
+          <div class="card-sub">Maintenance and diagnostic tools</div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>🔄 Auto Refresh Dashboard</h4>
+              <p>Refresh dashboard data every 5 minutes automatically</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="s-autorefresh" /><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>📋 Activity Logging</h4>
+              <p>Log all user actions for audit trail</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="s-logging" checked /><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <h4>🐛 Debug Mode</h4>
+              <p>Show detailed error messages in console</p>
+            </div>
+            <label class="toggle"><input type="checkbox" id="s-debug" /><span class="slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- DANGER ZONE -->
+      <div id="tab-danger" class="section">
+        <div class="danger-card">
+          <div class="danger-title">⚠️ Danger Zone</div>
+          <div class="danger-sub">These actions are irreversible. Please be absolutely sure before proceeding.</div>
+
+          <div class="danger-row">
+            <div class="danger-row-info">
+              <h4>🗑️ Clear All Orders</h4>
+              <p>Permanently delete all orders from the database</p>
+            </div>
+            <button class="btn-danger" onclick="dangerAction('orders')">Clear Orders</button>
+          </div>
+          <div class="danger-row">
+            <div class="danger-row-info">
+              <h4>👥 Clear All Customers</h4>
+              <p>Permanently remove all customer records</p>
+            </div>
+            <button class="btn-danger" onclick="dangerAction('customers')">Clear Customers</button>
+          </div>
+          <div class="danger-row">
+            <div class="danger-row-info">
+              <h4>🔄 Reset All Settings</h4>
+              <p>Restore all settings to factory defaults</p>
+            </div>
+            <button class="btn-danger" onclick="resetSettings()">Reset Settings</button>
+          </div>
+          <div class="danger-row">
+            <div class="danger-row-info">
+              <h4>🚪 Logout All Sessions</h4>
+              <p>Sign out from all active sessions immediately</p>
+            </div>
+            <button class="btn-danger" onclick="logoutAll()">Logout All</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000';
+  const SETTINGS_KEY = 'smart_retail_settings';
+
+  // ── Apply theme instantly ─────────────────────
+  function applyTheme(theme, accent) {
+    if (theme === 'light') {
+      document.body.style.background = '#f1f5f9';
+      document.body.style.color = '#0f172a';
+      document.querySelectorAll('.card,.danger-card,.tabs').forEach(el => {
+        el.style.background = '#ffffff'; el.style.borderColor = '#e2e8f0';
+      });
+      document.querySelector('.sidebar').style.background = 'rgba(241,245,249,0.98)';
+    } else if (theme === 'blue') {
+      document.body.style.background = '#0d1f3c';
+      document.body.style.color = '#e5e7eb';
+      document.querySelectorAll('.card,.danger-card,.tabs').forEach(el => {
+        el.style.background = 'rgba(13,31,60,0.9)'; el.style.borderColor = 'rgba(59,130,246,0.2)';
+      });
+      document.querySelector('.sidebar').style.background = 'rgba(10,20,50,0.98)';
+    } else {
+      document.body.style.background = '#0a0e1a';
+      document.body.style.color = '#e5e7eb';
+      document.querySelectorAll('.card,.danger-card,.tabs').forEach(el => {
+        el.style.background = ''; el.style.borderColor = '';
+      });
+      document.querySelector('.sidebar').style.background = 'rgba(15,23,42,0.95)';
+    }
+    if (accent) {
+      document.querySelectorAll('.btn-save-all,.btn-section-save').forEach(el => {
+        el.style.background = `linear-gradient(135deg,${accent},${accent}bb)`;
+      });
+    }
+  }
+
+  // ── Load saved settings ───────────────────────
+  function loadSettings() {
+    // Set ₹ as default currency if not already set
+    if (!localStorage.getItem('currency_symbol')) {
+      localStorage.setItem('currency_symbol', '₹');
+      localStorage.setItem('currency_rate', '1');
+      localStorage.setItem('currency_label', '₹ INR');
+    }
+    // Fix wrong rate: if symbol is ₹ but rate is > 1, reset to 1
+    const storedSym  = localStorage.getItem('currency_symbol');
+    const storedRate = parseFloat(localStorage.getItem('currency_rate') || '1');
+    if (storedSym === '₹' && storedRate > 1) {
+      localStorage.setItem('currency_rate', '1');
+    }
+    if (storedSym === '$' && storedRate >= 1) {
+      localStorage.setItem('currency_rate', '0.012');
+    }
+
+    const s     = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    const owner = localStorage.getItem('owner_email') || localStorage.getItem('ownerEmail') || '';
+
+    if (s.name)     document.getElementById('p-name').value     = s.name;
+    if (s.username) document.getElementById('p-username').value = s.username;
+    if (s.email)    document.getElementById('p-email').value    = s.email;
+    else if (owner) document.getElementById('p-email').value    = owner;
+    if (s.phone)    document.getElementById('p-phone').value    = s.phone;
+    if (s.bio)      document.getElementById('p-bio').value      = s.bio;
+
+    const name = s.name || owner.split('@')[0] || 'A';
+    document.getElementById('profile-avatar').textContent        = name[0].toUpperCase();
+    document.getElementById('profile-display-name').textContent  = s.name || name;
+    document.getElementById('profile-display-email').textContent = s.email || owner;
+
+    const n = s.notifications || {};
+    ['lowstock','neworder','signup','daily','payment','browser','sound'].forEach(k => {
+      const el = document.getElementById('n-'+k);
+      if (el && n[k] !== undefined) el.checked = n[k];
+    });
+
+    if (s.emailUser)  document.getElementById('e-gmail').value  = s.emailUser;
+    if (s.adminEmail) document.getElementById('e-admin').value  = s.adminEmail;
+    checkEmailStatus();
+
+    // Restore appearance dropdowns
+    if (s.currency)   document.getElementById('a-currency').value = s.currency;
+    if (s.dateFormat) document.getElementById('a-date').value     = s.dateFormat;
+    if (s.language)   document.getElementById('a-lang').value     = s.language;
+    if (s.perPage)    document.getElementById('a-perpage').value  = s.perPage;
+
+    // Restore theme & accent
+    const theme  = s.theme  || 'dark';
+    const accent = s.accent || '#3b82f6';
+    document.querySelectorAll('.theme-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.theme === theme);
+    });
+    document.querySelectorAll('.accent-dot').forEach(d => {
+      d.classList.toggle('selected', d.dataset.color === accent);
+    });
+    applyTheme(theme, accent);
+
+    document.getElementById('sys-owner').textContent = owner || 'Not logged in';
+    document.getElementById('sys-login').textContent = new Date().toLocaleString();
+    loadSystemCounts();
+  }
+
+  async function loadSystemCounts() {
+    try {
+      const res  = await fetch(`${API}/api/stats/all`);
+      const data = await res.json();
+      document.getElementById('sys-products').textContent  = data.products  || '—';
+      document.getElementById('sys-orders').textContent    = data.orders    || '—';
+      document.getElementById('sys-customers').textContent = data.customers || '—';
+      document.getElementById('sys-backend').innerHTML = '<span style="color:#22c55e">✅ Online</span>';
+      document.getElementById('sys-db').innerHTML      = '<span style="color:#22c55e">✅ Connected</span>';
+    } catch {
+      document.getElementById('sys-backend').innerHTML = '<span style="color:#ef4444">❌ Offline</span>';
+      document.getElementById('sys-db').innerHTML      = '<span style="color:#ef4444">❌ Disconnected</span>';
+    }
+  }
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  // ── Theme — applies INSTANTLY ─────────────────
+  function selectTheme(el, theme) {
+    document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const s = { ...getSetting(), theme };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    applyTheme(theme, s.accent || '#3b82f6');
+    showToast('🎨 Theme "' + theme + '" applied!');
+  }
+
+  // ── Accent — applies INSTANTLY ────────────────
+  function selectAccent(el, color) {
+    document.querySelectorAll('.accent-dot').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+    const s = { ...getSetting(), accent: color };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    applyTheme(s.theme || 'dark', color);
+    showToast('🎨 Accent color applied!');
+  }
+
+  function checkEmailStatus() {
+    const gmail = document.getElementById('e-gmail').value.trim();
+    const pass  = document.getElementById('e-apppass').value.trim();
+    const badge = document.getElementById('email-status-badge');
+    if (gmail && pass.length >= 16) {
+      badge.className = 'email-status configured'; badge.textContent = '✅ Configured';
+    } else {
+      badge.className = 'email-status not-configured'; badge.textContent = '⚠️ Not Configured';
+    }
+  }
+
+  async function testEmail() {
+    showToast('📨 Sending test email...');
+    try {
+      const res  = await fetch(`${API}/api/notify/new-signup`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({new_user_name:'Test User',new_user_email:'test@smartretail.com'})
+      });
+      const data = await res.json();
+      showToast(data.sent ? '✅ Test email sent!' : '❌ Email failed — check credentials');
+    } catch { showToast('❌ Backend offline — run npm start'); }
+  }
+
+  function changeAvatar() { showToast('📷 Avatar upload — coming soon'); }
+
+  // ── Password change — REAL ────────────────────
+  function saveProfile() {
+    const name     = document.getElementById('p-name').value.trim();
+    const oldPass  = document.getElementById('p-old-pass').value;
+    const newPass  = document.getElementById('p-new-pass').value;
+    const confPass = document.getElementById('p-confirm-pass').value;
+
+    if (newPass || confPass || oldPass) {
+      if (!oldPass) { showToast('❌ Enter your current password'); return; }
+      const saved = JSON.parse(localStorage.getItem('user') || '{}');
+      if (saved.password && saved.password !== oldPass) {
+        showToast('❌ Current password is incorrect!'); return;
+      }
+      if (newPass.length < 8) { showToast('❌ New password must be 8+ characters'); return; }
+      if (newPass !== confPass) { showToast('❌ Passwords do not match!'); return; }
+      const user = { ...saved, password: newPass };
+      localStorage.setItem('user', JSON.stringify(user));
+      document.getElementById('p-old-pass').value   = '';
+      document.getElementById('p-new-pass').value   = '';
+      document.getElementById('p-confirm-pass').value = '';
+      showToast('🔐 Password changed successfully!');
+    }
+
+    const s = { ...getSetting(), name,
+      username: document.getElementById('p-username').value,
+      email:    document.getElementById('p-email').value,
+      phone:    document.getElementById('p-phone').value,
+      bio:      document.getElementById('p-bio').value,
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    if (name) {
+      document.getElementById('profile-avatar').textContent       = name[0].toUpperCase();
+      document.getElementById('profile-display-name').textContent = name;
+      document.getElementById('profile-display-email').textContent= document.getElementById('p-email').value;
+    }
+    if (!newPass) showToast('✅ Profile saved!');
+  }
+
+  function saveNotifications() {
+    const s = { ...getSetting(), notifications: {
+      lowstock: document.getElementById('n-lowstock').checked,
+      neworder: document.getElementById('n-neworder').checked,
+      signup:   document.getElementById('n-signup').checked,
+      daily:    document.getElementById('n-daily').checked,
+      payment:  document.getElementById('n-payment').checked,
+      browser:  document.getElementById('n-browser').checked,
+      sound:    document.getElementById('n-sound').checked,
+    }};
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    showToast('✅ Notifications saved!');
+  }
+
+  function saveAppearance() {
+    const currencyVal = document.getElementById('a-currency').value;
+    const symbolMap = { '₹ INR':'₹', '$ USD':'$', '€ EUR':'€', '£ GBP':'£' };
+    const symbol = symbolMap[currencyVal] || '₹';
+
+    // Conversion rates FROM INR (base currency)
+    // DB prices are in USD. Convert from USD to selected currency.
+    // DB prices are in ₹ INR — convert to other currencies
+    const rateMap = {
+      '₹ INR': 1,       // base — show as-is
+      '$ USD': 0.012,   // 1₹ = $0.012  (so ₹2000 = $24)
+      '€ EUR': 0.011,   // 1₹ = €0.011
+      '£ GBP': 0.0096,  // 1₹ = £0.0096
+    };
+    const rate = rateMap[currencyVal] || 1;
+
+    localStorage.setItem('currency_symbol', symbol);
+    localStorage.setItem('currency_label',  currencyVal);
+    localStorage.setItem('currency_rate',   rate);  // ← store rate
+
+    const s = { ...getSetting(),
+      dateFormat: document.getElementById('a-date').value,
+      currency:   currencyVal,
+      language:   document.getElementById('a-lang').value,
+      perPage:    document.getElementById('a-perpage').value,
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    showToast(`✅ Currency set to ${symbol}`);
+  }
+
+  function applyCurrencySymbol(symbol) {
+    // Update all elements that show currency on the page
+    document.querySelectorAll('[data-currency]').forEach(el => {
+      const raw = el.dataset.currency;
+      el.textContent = symbol + parseFloat(raw).toLocaleString('en-IN', {minimumFractionDigits:2});
+    });
+  }
+
+  function saveEmail() {
+    const s = { ...getSetting(),
+      emailUser:  document.getElementById('e-gmail').value,
+      adminEmail: document.getElementById('e-admin').value,
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    showToast('✅ Email config saved!');
+  }
+
+  function saveAll() {
+    saveProfile(); saveNotifications(); saveAppearance(); saveEmail();
+    showToast('✅ All settings saved!');
+  }
+
+  function getSetting() {
+    return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+  }
+
+  // ── Danger Zone — REAL backend calls ─────────
+  function dangerAction(type) {
+    const phrase = type === 'orders' ? 'DELETE_ALL_ORDERS' : 'DELETE_ALL_CUSTOMERS';
+    const entered = prompt(`⚠️ DANGER! This permanently deletes ALL ${type}.\n\nType exactly to confirm:\n${phrase}`);
+    if (entered !== phrase) { showToast('❌ Cancelled — phrase did not match'); return; }
+
+    const btn = event.target;
+    btn.textContent = '⏳ Deleting...'; btn.disabled = true;
+
+    fetch(`${API}/api/danger/clear-${type}`, {
+      method: 'DELETE',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ confirm: phrase })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showToast(`🗑️ All ${type} deleted from database!`);
+        loadSystemCounts();
+      } else {
+        showToast('❌ ' + (data.error || 'Error occurred'));
+      }
+    })
+    .catch(() => showToast('❌ Backend not reachable — run npm start'))
+    .finally(() => {
+      const label = type.charAt(0).toUpperCase() + type.slice(1);
+      btn.textContent = 'Clear ' + label; btn.disabled = false;
+    });
+  }
+
+  function resetSettings() {
+    if (!confirm('Reset ALL settings to defaults?')) return;
+    localStorage.removeItem(SETTINGS_KEY);
+    showToast('✅ Settings reset!');
+    setTimeout(() => location.reload(), 1000);
+  }
+
+  function logoutAll() {
+    if (!confirm('Logout from all sessions?')) return;
+    localStorage.clear();
+    window.location.href = 'login.html';
+  }
+
+  function showToast(msg) {
+    let t = document.getElementById('toast');
+    if (!t) {
+      t = document.createElement('div'); t.id = 'toast';
+      t.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:9999;
+        background:rgba(15,23,42,0.97);border:1px solid #22c55e;color:#e5e7eb;
+        padding:14px 22px;border-radius:12px;font-size:14px;font-weight:600;
+        box-shadow:0 8px 30px rgba(0,0,0,0.4);animation:slideUp 0.3s ease;display:none;`;
+      document.body.appendChild(t);
+    }
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.style.display = 'none', 3500);
+  }
+
+  loadSettings();
+</script>
+</body>
+</html>

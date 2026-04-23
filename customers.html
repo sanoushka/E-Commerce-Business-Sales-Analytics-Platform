@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Customers - Smart Retail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --text: #e5e7eb;
+      --card: rgba(15,23,42,0.8);
+      --border: rgba(148,163,184,0.2);
+      --sidebar: rgba(15,23,42,0.95);
+      --accent: #3b82f6;
+    }
+    body { background: var(--bg) !important; color: var(--text) !important; }
+    .sidebar { background: var(--sidebar) !important; }
+    .card, .product-card, .chart-card, .table-card, .section-card,
+    .stat-card, .customer-card, .rule-card, .modal-box { 
+      background: var(--card) !important; 
+      border-color: var(--border) !important; 
+    }
+    .header, .filter-bar, .tabs { 
+      background: var(--card) !important; 
+      border-color: var(--border) !important; 
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { background: #0a0e1a; color: #e5e7eb; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: rgba(15,23,42,0.95); border-right: 1px solid rgba(148,163,184,0.2); padding: 24px 0; backdrop-filter: blur(10px); z-index: 100; }
+    .sidebar-header { padding: 0 24px 24px; border-bottom: 1px solid rgba(148,163,184,0.2); }
+    .sidebar-header h2 { font-size: 20px; background: linear-gradient(135deg,#3b82f6,#22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-menu { margin-top: 24px; padding: 0 12px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 4px; border-radius: 10px; color: #94a3b8; text-decoration: none; cursor: pointer; transition: all 0.2s; }
+    .nav-item:hover { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .nav-item.active { background: rgba(59,130,246,0.15); color: #3b82f6; font-weight: 600; }
+
+    /* MAIN */
+    .main-content { margin-left: 260px; padding: 24px; }
+
+    /* HEADER */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; padding: 20px 24px; background: rgba(15,23,42,0.6); border-radius: 16px; border: 1px solid rgba(148,163,184,0.2); }
+    .header-left h1 { font-size: 22px; font-weight: 700; }
+    .header-left p { color: #64748b; font-size: 13px; margin-top: 4px; }
+    .connection-status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .status-connected { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .status-disconnected { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* STAT CARDS */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.15); border-radius: 14px; padding: 20px 22px; }
+    .stat-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+    .stat-value { font-size: 30px; font-weight: 700; }
+    .stat-sub { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .c-blue{color:#3b82f6} .c-green{color:#22c55e} .c-purple{color:#a78bfa} .c-yellow{color:#f59e0b}
+
+    /* FILTER BAR */
+    .filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; padding: 16px 20px; background: rgba(15,23,42,0.6); border-radius: 14px; border: 1px solid rgba(148,163,184,0.15); }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap input { width: 100%; padding: 10px 14px 10px 38px; background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); border-radius: 10px; color: #e5e7eb; font-size: 14px; }
+    .search-wrap input:focus { outline: none; border-color: #3b82f6; }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #64748b; }
+    .filter-select { padding: 10px 14px; background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); border-radius: 10px; color: #e5e7eb; font-size: 13px; cursor: pointer; }
+    .filter-select:focus { outline: none; border-color: #3b82f6; }
+    .btn-refresh { padding: 10px 18px; background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; border-radius: 10px; color: #3b82f6; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-refresh:hover { background: #3b82f6; color: white; }
+
+    /* CUSTOMER CARDS GRID */
+    .customers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+    .customer-card {
+      background: rgba(15,23,42,0.75); border: 1px solid rgba(148,163,184,0.15);
+      border-radius: 16px; padding: 22px; cursor: pointer;
+      transition: all 0.25s; position: relative; overflow: hidden;
+    }
+    .customer-card:hover { transform: translateY(-4px); box-shadow: 0 14px 35px rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); }
+    .customer-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg,#3b82f6,#22c55e); opacity:0; transition:opacity 0.2s; }
+    .customer-card:hover::before { opacity:1; }
+
+    .card-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+    .avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg,#3b82f6,#8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700; color: white; flex-shrink: 0;
+      text-transform: uppercase;
+    }
+    .avatar.vip { background: linear-gradient(135deg,#f59e0b,#ef4444); }
+    .avatar.new-c { background: linear-gradient(135deg,#22c55e,#3b82f6); }
+
+    .card-name { font-size: 16px; font-weight: 700; color: #f1f5f9; }
+    .card-email { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+    .type-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 5px; }
+    .badge-vip      { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .badge-regular  { background: rgba(59,130,246,0.15);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+    .badge-new      { background: rgba(34,197,94,0.15);   color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+
+    .card-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .card-stat { background: rgba(30,41,59,0.5); border-radius: 10px; padding: 10px 12px; }
+    .cs-label { font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .cs-value { font-size: 16px; font-weight: 700; margin-top: 3px; }
+
+    .card-phone { font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+
+    .btn-view { width: 100%; padding: 10px; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.35); border-radius: 10px; color: #60a5fa; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-view:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+    /* EMPTY / LOADING */
+    .empty-state { text-align: center; padding: 60px 20px; color: #64748b; grid-column: 1/-1; }
+    .empty-state .icon { font-size: 52px; margin-bottom: 14px; }
+
+    /* DETAIL MODAL */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+    .modal.active { display: flex; }
+    .modal-box { background: rgba(15,23,42,0.99); border: 1px solid rgba(148,163,184,0.25); border-radius: 22px; padding: 36px; width: min(560px, 94vw); max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.6); animation: popIn 0.22s ease; }
+    @keyframes popIn { from{transform:scale(0.88);opacity:0} to{transform:scale(1);opacity:1} }
+
+    .modal-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid rgba(148,163,184,0.1); }
+    .modal-avatar { width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg,#3b82f6,#8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: white; text-transform: uppercase; }
+    .modal-avatar.vip { background: linear-gradient(135deg,#f59e0b,#ef4444); }
+    .modal-avatar.new-c { background: linear-gradient(135deg,#22c55e,#3b82f6); }
+    .modal-name { font-size: 22px; font-weight: 700; }
+    .modal-email { color: #64748b; font-size: 13px; margin-top: 3px; }
+
+    .modal-close { margin-left: auto; width: 36px; height: 36px; border-radius: 10px; background: rgba(148,163,184,0.1); border: none; color: #94a3b8; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .modal-close:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .detail-item { background: rgba(30,41,59,0.5); border-radius: 12px; padding: 14px 16px; }
+    .detail-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .detail-value { font-size: 16px; font-weight: 600; color: #e5e7eb; }
+
+    .section-title { font-size: 14px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(148,163,184,0.1); }
+
+    .order-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(30,41,59,0.4); border-radius: 10px; margin-bottom: 8px; }
+    .order-row-left { font-size: 13px; }
+    .order-row-id { font-weight: 700; color: #3b82f6; }
+    .order-row-date { color: #64748b; font-size: 12px; margin-top: 2px; }
+    .order-row-amount { font-weight: 700; color: #22c55e; }
+
+    .no-orders { text-align: center; padding: 24px; color: #64748b; font-size: 13px; }
+
+    /* PAGINATION */
+    .pagination { display: flex; justify-content: center; gap: 8px; padding: 20px 0; }
+    .page-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.2); background: rgba(30,41,59,0.6); color: #94a3b8; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    .page-btn:hover, .page-btn.active { background: #3b82f6; border-color: #3b82f6; color: white; }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .results-info { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 16px; }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    .no-backend { text-align:center; padding:60px 20px; color:#64748b; grid-column:1/-1; }
+    .no-backend .icon { font-size:52px; margin-bottom:14px; }
+    .no-backend h3 { color:#e5e7eb; margin-bottom:8px; }
+    .no-backend code { display:block; margin:16px auto; padding:12px 20px; background:rgba(30,41,59,0.8); border-radius:10px; font-size:13px; color:#3b82f6; max-width:280px; }
+  </style>
+</head>
+<body>
+<script>
+(function(){
+  const s = JSON.parse(localStorage.getItem('smart_retail_settings')||'{}');
+  const theme  = s.theme  || 'dark';
+  const accent = s.accent || '#3b82f6';
+  if(theme==='light'){
+    document.documentElement.style.setProperty('--bg','#f1f5f9');
+    document.documentElement.style.setProperty('--text','#0f172a');
+    document.documentElement.style.setProperty('--card','#ffffff');
+    document.documentElement.style.setProperty('--border','#e2e8f0');
+    document.documentElement.style.setProperty('--sidebar','rgba(241,245,249,0.98)');
+  } else if(theme==='blue'){
+    document.documentElement.style.setProperty('--bg','#0d1f3c');
+    document.documentElement.style.setProperty('--text','#e5e7eb');
+    document.documentElement.style.setProperty('--card','rgba(13,31,60,0.9)');
+    document.documentElement.style.setProperty('--border','rgba(59,130,246,0.2)');
+    document.documentElement.style.setProperty('--sidebar','rgba(10,20,50,0.98)');
+  } else {
+    document.documentElement.style.setProperty('--bg','#0a0e1a');
+    document.documentElement.style.setProperty('--text','#e5e7eb');
+    document.documentElement.style.setProperty('--card','rgba(15,23,42,0.8)');
+    document.documentElement.style.setProperty('--border','rgba(148,163,184,0.2)');
+    document.documentElement.style.setProperty('--sidebar','rgba(15,23,42,0.95)');
+  }
+  document.documentElement.style.setProperty('--accent', accent);
+})();
+</script>
+
+  <div class="sidebar">
+    <div class="sidebar-header"><h2>Smart Retail</h2></div>
+    <nav class="nav-menu">
+      <a href="dashboard_dynamic.html" class="nav-item"><span>📊</span><span>Dashboard</span></a>
+      <a href="products.html"          class="nav-item"><span>📦</span><span>Products</span></a>
+      <a href="orders.html"            class="nav-item"><span>🛒</span><span>Orders</span></a>
+      <a href="customers.html"         class="nav-item active"><span>👥</span><span>Customers</span></a>
+      <a href="automation.html"        class="nav-item"><span>🤖</span><span>Automation</span></a>
+      <a href="dashboard_analytics.html" class="nav-item"><span>📈</span><span>Analytics</span></a>
+      <a href="settings.html"          class="nav-item"><span>⚙️</span><span>Settings</span></a>
+      <a href="index.html"             class="nav-item"><span>🚪</span><span>Logout</span></a>
+    </nav>
+  </div>
+
+  <div class="main-content">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-left">
+        <h1>👥 Customers Management</h1>
+        <p id="cust-count">Loading customers...</p>
+      </div>
+      <div id="connection-status" class="connection-status status-disconnected">
+        <span class="status-dot" style="background:#ef4444"></span>
+        <span>Connecting...</span>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value c-blue"   id="s-total">—</div>
+        <div class="stat-sub">All registered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">⭐ VIP</div>
+        <div class="stat-value c-yellow" id="s-vip">—</div>
+        <div class="stat-sub">High-value customers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🔵 Regular</div>
+        <div class="stat-value c-blue"   id="s-regular">—</div>
+        <div class="stat-sub">Returning customers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🟢 New</div>
+        <div class="stat-value c-green"  id="s-new">—</div>
+        <div class="stat-sub">Recently joined</div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search by name, email or phone..." oninput="applyFilters()" />
+      </div>
+      <select class="filter-select" id="type-filter" onchange="applyFilters()">
+        <option value="">All Types</option>
+        <option value="vip">⭐ VIP</option>
+        <option value="regular">🔵 Regular</option>
+        <option value="new">🟢 New</option>
+      </select>
+      <select class="filter-select" id="sort-select" onchange="applyFilters()">
+        <option value="spent_desc">Highest Spent</option>
+        <option value="spent_asc">Lowest Spent</option>
+        <option value="orders_desc">Most Orders</option>
+        <option value="name_asc">Name A→Z</option>
+        <option value="id_asc">ID 1→9</option>
+      </select>
+      <button class="btn-refresh" onclick="loadCustomers()">🔄 Refresh</button>
+    </div>
+
+    <!-- RESULTS INFO -->
+    <div class="results-info" id="results-info"></div>
+
+    <!-- CARDS GRID -->
+    <div class="customers-grid" id="customers-grid">
+      <div class="empty-state"><div class="icon">⏳</div><p>Loading customers...</p></div>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" id="pagination"></div>
+
+  </div>
+
+  <!-- CUSTOMER DETAIL MODAL -->
+  <div id="detailModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-avatar" id="m-avatar"></div>
+        <div>
+          <div class="modal-name" id="m-name"></div>
+          <div class="modal-email" id="m-email"></div>
+          <div id="m-badge" style="margin-top:6px"></div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="section-title">📋 Customer Details</div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-label">Customer ID</div><div class="detail-value" id="m-id"></div></div>
+        <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value" id="m-phone"></div></div>
+        <div class="detail-item"><div class="detail-label">Total Spent</div><div class="detail-value c-green" id="m-spent"></div></div>
+        <div class="detail-item"><div class="detail-label">Total Orders</div><div class="detail-value c-blue" id="m-orders"></div></div>
+        <div class="detail-item"><div class="detail-label">Customer Type</div><div class="detail-value" id="m-type"></div></div>
+        <div class="detail-item"><div class="detail-label">Joined</div><div class="detail-value" id="m-joined"></div></div>
+      </div>
+
+      <div class="section-title">🛒 Recent Orders</div>
+      <div id="m-order-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+    function getCurrencySymbol() {
+      if (!localStorage.getItem('currency_symbol')) {
+        localStorage.setItem('currency_symbol', '₹');
+        localStorage.setItem('currency_rate', '1');
+      }
+      // Fix wrong rate if it was previously set to 1 for INR
+      const sym = localStorage.getItem('currency_symbol') || '₹';
+      const rate = parseFloat(localStorage.getItem('currency_rate') || '1');
+      if (sym === '₹' && rate < 1) {
+        localStorage.setItem('currency_rate', '1');
+      }
+      return sym;
+    }
+    function getCurrencyRate() {
+      return parseFloat(localStorage.getItem('currency_rate') || '1');
+    }
+    function formatCurrency(amount) {
+      const sym  = getCurrencySymbol();
+      const rate = getCurrencyRate();
+      const val  = parseFloat(String(amount).replace(/[^0-9.]/g,'')) || 0;
+      const converted = val * rate;
+      return sym + converted.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+    let allCustomers = [];
+    let allOrders    = [];
+    let filtered     = [];
+    let currentPage  = 1;
+    const PAGE_SIZE  = 9;
+
+    function setConnected(ok) {
+      const el = document.getElementById('connection-status');
+      el.className = 'connection-status ' + (ok ? 'status-connected' : 'status-disconnected');
+      el.querySelector('.status-dot').style.background = ok ? '#22c55e' : '#ef4444';
+      el.querySelector('span:last-child').textContent  = ok ? 'Connected' : 'Disconnected';
+    }
+
+    async function loadCustomers() {
+      try {
+        const [cRes, oRes] = await Promise.all([
+          fetch(`${API_URL}/api/customers`),
+          fetch(`${API_URL}/api/orders`)
+        ]);
+        allCustomers = await cRes.json();
+        allOrders    = await oRes.json();
+        setConnected(true);
+        updateStats();
+        applyFilters();
+        document.getElementById('cust-count').textContent = `${allCustomers.length} total customers`;
+      } catch (e) {
+        setConnected(false);
+        document.getElementById('cust-count').textContent = 'Unable to load';
+        document.getElementById('customers-grid').innerHTML = `
+          <div class="no-backend">
+            <div class="icon">🔌</div>
+            <h3>Backend not connected</h3>
+            <p>Make sure backend is running:</p>
+            <code>npm start</code>
+            <button class="btn-refresh" style="margin-top:16px" onclick="loadCustomers()">🔄 Retry</button>
+          </div>`;
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('s-total').textContent   = allCustomers.length;
+      document.getElementById('s-vip').textContent     = allCustomers.filter(c => c.customer_type === 'vip').length;
+      document.getElementById('s-regular').textContent = allCustomers.filter(c => c.customer_type === 'regular').length;
+      document.getElementById('s-new').textContent     = allCustomers.filter(c => c.customer_type === 'new').length;
+    }
+
+    function applyFilters() {
+      const q    = document.getElementById('search-input').value.toLowerCase();
+      const type = document.getElementById('type-filter').value;
+      const sort = document.getElementById('sort-select').value;
+
+      filtered = allCustomers.filter(c => {
+        const matchQ    = !q || (c.name||'').toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q) || (c.phone||'').includes(q);
+        const matchType = !type || c.customer_type === type;
+        return matchQ && matchType;
+      });
+
+      filtered.sort((a,b) => {
+        if (sort === 'spent_desc')  return parseFloat(b.total_spent||0) - parseFloat(a.total_spent||0);
+        if (sort === 'spent_asc')   return parseFloat(a.total_spent||0) - parseFloat(b.total_spent||0);
+        if (sort === 'orders_desc') return (b.total_orders||0) - (a.total_orders||0);
+        if (sort === 'name_asc')    return (a.name||'').localeCompare(b.name||'');
+        if (sort === 'id_asc')      return a.customer_id - b.customer_id;
+        return 0;
+      });
+
+      currentPage = 1;
+      document.getElementById('results-info').textContent =
+        filtered.length ? `Showing ${filtered.length} of ${allCustomers.length} customers` : '';
+      renderCards();
+      renderPagination();
+    }
+
+    function avatarInitials(name) {
+      if (!name) return '?';
+      const parts = name.trim().split(' ');
+      return parts.length >= 2 ? parts[0][0] + parts[1][0] : parts[0][0];
+    }
+
+    function typeBadge(t) {
+      if (t === 'vip')     return `<span class="type-badge badge-vip">⭐ VIP</span>`;
+      if (t === 'regular') return `<span class="type-badge badge-regular">🔵 Regular</span>`;
+      return `<span class="type-badge badge-new">🟢 New</span>`;
+    }
+
+    function avatarClass(t) {
+      if (t === 'vip') return 'vip';
+      if (t === 'new') return 'new-c';
+      return '';
+    }
+
+    function customerOrders(id) {
+      return allOrders.filter(o => o.customer_id === id || String(o.customer_id) === String(id));
+    }
+
+    function renderCards() {
+      const grid  = document.getElementById('customers-grid');
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const page  = filtered.slice(start, start + PAGE_SIZE);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>No customers match your search</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = page.map(c => {
+        const orders  = customerOrders(c.customer_id);
+        const spent   = parseFloat(c.total_spent || 0).toFixed(2);
+        const sym_ = getCurrencySymbol();
+        const oCount  = c.total_orders || orders.length || 0;
+        const initials = avatarInitials(c.name);
+        const aClass   = avatarClass(c.customer_type);
+
+        return `
+          <div class="customer-card" onclick="openModal(${c.customer_id})">
+            <div class="card-top">
+              <div class="avatar ${aClass}">${initials}</div>
+              <div>
+                <div class="card-name">${c.name || '—'}</div>
+                <div class="card-email">${c.email || '—'}</div>
+                ${typeBadge(c.customer_type)}
+              </div>
+            </div>
+            <div class="card-phone">📞 ${c.phone || 'No phone'}</div>
+            <div class="card-stats">
+              <div class="card-stat">
+                <div class="cs-label">Total Spent</div>
+                <div class="cs-value c-green">${formatCurrency(spent)}</div>
+              </div>
+              <div class="card-stat">
+                <div class="cs-label">Orders</div>
+                <div class="cs-value c-blue">${oCount}</div>
+              </div>
+            </div>
+            <button class="btn-view">👁 View Profile</button>
+          </div>`;
+      }).join('');
+    }
+
+    function renderPagination() {
+      const total = Math.ceil(filtered.length / PAGE_SIZE);
+      const pg    = document.getElementById('pagination');
+      if (total <= 1) { pg.innerHTML = ''; return; }
+      let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Prev</button>`;
+      for (let i = 1; i <= total; i++) {
+        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+      }
+      html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>Next →</button>`;
+      pg.innerHTML = html;
+    }
+
+    function goPage(n) {
+      const total = Math.ceil(filtered.length / PAGE_SIZE);
+      if (n < 1 || n > total) return;
+      currentPage = n;
+      renderCards();
+      renderPagination();
+    }
+
+    function formatDate(d) {
+      if (!d) return '—';
+      return new Date(d).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    function openModal(id) {
+      const c = allCustomers.find(x => x.customer_id === id || String(x.customer_id) === String(id));
+      if (!c) return;
+
+      const aClass = avatarClass(c.customer_type);
+      document.getElementById('m-avatar').className  = `modal-avatar ${aClass}`;
+      document.getElementById('m-avatar').textContent = avatarInitials(c.name);
+      document.getElementById('m-name').textContent   = c.name || '—';
+      document.getElementById('m-email').textContent  = c.email || '—';
+      document.getElementById('m-badge').innerHTML    = typeBadge(c.customer_type);
+      document.getElementById('m-id').textContent     = '#' + c.customer_id;
+      document.getElementById('m-phone').textContent  = c.phone || 'Not provided';
+      document.getElementById('m-spent').textContent  = formatCurrency(c.total_spent || 0);
+      document.getElementById('m-orders').textContent = c.total_orders || 0;
+      document.getElementById('m-type').textContent   = (c.customer_type || 'new').toUpperCase();
+      document.getElementById('m-joined').textContent = formatDate(c.created_at);
+
+      const orders = customerOrders(c.customer_id).slice(0, 5);
+      document.getElementById('m-order-list').innerHTML = orders.length
+        ? orders.map(o => `
+            <div class="order-row">
+              <div class="order-row-left">
+                <div class="order-row-id">#${o.order_id}</div>
+                <div class="order-row-date">${formatDate(o.order_date)} · ${o.status}</div>
+              </div>
+              <div class="order-row-amount">${formatCurrency(parseFloat(o.total_amount||0).toFixed(2))}</div>
+            </div>`).join('')
+        : '<div class="no-orders">No orders found for this customer</div>';
+
+      document.getElementById('detailModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').classList.remove('active');
+    }
+
+    document.getElementById('detailModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    loadCustomers();
+  </script>
+</body>
+</html>

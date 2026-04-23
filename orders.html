@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Orders - Smart Retail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --text: #e5e7eb;
+      --card: rgba(15,23,42,0.8);
+      --border: rgba(148,163,184,0.2);
+      --sidebar: rgba(15,23,42,0.95);
+      --accent: #3b82f6;
+    }
+    body { background: var(--bg) !important; color: var(--text) !important; }
+    .sidebar { background: var(--sidebar) !important; }
+    .card, .product-card, .chart-card, .table-card, .section-card,
+    .stat-card, .customer-card, .rule-card, .modal-box { 
+      background: var(--card) !important; 
+      border-color: var(--border) !important; 
+    }
+    .header, .filter-bar, .tabs { 
+      background: var(--card) !important; 
+      border-color: var(--border) !important; 
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+
+    body { background: #0a0e1a; color: #e5e7eb; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: rgba(15,23,42,0.95); border-right: 1px solid rgba(148,163,184,0.2); padding: 24px 0; backdrop-filter: blur(10px); z-index: 100; }
+    .sidebar-header { padding: 0 24px 24px; border-bottom: 1px solid rgba(148,163,184,0.2); }
+    .sidebar-header h2 { font-size: 20px; background: linear-gradient(135deg,#3b82f6,#22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-menu { margin-top: 24px; padding: 0 12px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 4px; border-radius: 10px; color: #94a3b8; text-decoration: none; cursor: pointer; transition: all 0.2s; }
+    .nav-item:hover { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .nav-item.active { background: rgba(59,130,246,0.15); color: #3b82f6; font-weight: 600; }
+
+    /* MAIN */
+    .main-content { margin-left: 260px; padding: 24px; }
+
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 28px; padding: 20px 24px;
+      background: rgba(15,23,42,0.6); border-radius: 16px;
+      border: 1px solid rgba(148,163,184,0.2);
+    }
+    .header-left h1 { font-size: 22px; font-weight: 700; }
+    .header-left p { color: #64748b; font-size: 13px; margin-top: 4px; }
+
+    .connection-status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .status-connected { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .status-disconnected { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* STAT CARDS */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.15); border-radius: 14px; padding: 20px 22px; }
+    .stat-label { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .stat-sub { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .c-blue { color: #3b82f6; } .c-green { color: #22c55e; } .c-yellow { color: #f59e0b; } .c-red { color: #ef4444; }
+
+    /* FILTER BAR */
+    .filter-bar {
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+      margin-bottom: 20px; padding: 16px 20px;
+      background: rgba(15,23,42,0.6); border-radius: 14px;
+      border: 1px solid rgba(148,163,184,0.15);
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap input {
+      width: 100%; padding: 10px 14px 10px 38px;
+      background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 10px; color: #e5e7eb; font-size: 14px;
+    }
+    .search-wrap input:focus { outline: none; border-color: #3b82f6; }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #64748b; }
+
+    .filter-select {
+      padding: 10px 14px; background: rgba(30,41,59,0.8);
+      border: 1px solid rgba(148,163,184,0.2); border-radius: 10px;
+      color: #e5e7eb; font-size: 13px; cursor: pointer;
+    }
+    .filter-select:focus { outline: none; border-color: #3b82f6; }
+
+    .btn-refresh {
+      padding: 10px 18px; background: rgba(59,130,246,0.15);
+      border: 1px solid #3b82f6; border-radius: 10px;
+      color: #3b82f6; font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-refresh:hover { background: #3b82f6; color: white; }
+
+    /* TABLE */
+    .table-wrap {
+      background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.15);
+      border-radius: 16px; overflow: hidden;
+    }
+    .table-header-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 24px; border-bottom: 1px solid rgba(148,163,184,0.1);
+    }
+    .table-title { font-size: 15px; font-weight: 600; color: #e5e7eb; }
+    .order-count { font-size: 12px; color: #64748b; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 14px 20px; text-align: left; font-size: 11px;
+      font-weight: 700; color: #64748b; text-transform: uppercase;
+      letter-spacing: 0.6px; border-bottom: 1px solid rgba(148,163,184,0.1);
+      background: rgba(15,23,42,0.4);
+    }
+    tbody tr { border-bottom: 1px solid rgba(148,163,184,0.07); transition: background 0.15s; }
+    tbody tr:hover { background: rgba(59,130,246,0.05); }
+    tbody tr:last-child { border-bottom: none; }
+    td { padding: 14px 20px; font-size: 14px; vertical-align: middle; }
+
+    .order-id { font-weight: 700; color: #3b82f6; font-size: 13px; }
+    .customer-name { font-weight: 600; color: #e5e7eb; }
+    .customer-email { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .order-amount { font-weight: 700; color: #22c55e; font-size: 15px; }
+    .order-date { color: #94a3b8; font-size: 13px; }
+    .payment-method { font-size: 12px; color: #94a3b8; }
+
+    /* STATUS BADGES */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .badge-pending   { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .badge-completed { background: rgba(34,197,94,0.15);  color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+    .badge-cancelled { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .badge-processing{ background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+    .badge-shipped   { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+
+    .badge-paid   { background: rgba(34,197,94,0.1);  color: #22c55e; }
+    .badge-unpaid { background: rgba(239,68,68,0.1);  color: #ef4444; }
+
+    /* ACTION BUTTONS */
+    .btn-status {
+      padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4);
+      color: #3b82f6; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-status:hover { background: #3b82f6; color: white; }
+
+    /* EMPTY / LOADING */
+    .empty-state { text-align: center; padding: 60px 20px; color: #64748b; }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; }
+
+    /* STATUS UPDATE MODAL */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+    .modal.active { display: flex; }
+    .modal-box {
+      background: rgba(15,23,42,0.98); border: 1px solid rgba(148,163,184,0.25);
+      border-radius: 20px; padding: 32px; width: min(440px, 92vw);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      animation: popIn 0.2s ease;
+    }
+    @keyframes popIn { from{transform:scale(0.88);opacity:0} to{transform:scale(1);opacity:1} }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .modal-sub { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+
+    .status-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+    .status-option {
+      padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.2);
+      background: rgba(30,41,59,0.5); cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all 0.2s; text-align: center;
+    }
+    .status-option:hover { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
+    .status-option.selected { border-color: #3b82f6; background: rgba(59,130,246,0.2); color: #60a5fa; }
+
+    .modal-actions { display: flex; gap: 12px; }
+    .btn-cancel-modal { flex:1; padding:11px; background:rgba(148,163,184,0.1); border:1px solid rgba(148,163,184,0.25); border-radius:10px; color:#94a3b8; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .btn-cancel-modal:hover { background:rgba(148,163,184,0.2); }
+    .btn-save-modal { flex:1; padding:11px; background:linear-gradient(135deg,#3b82f6,#22c55e); border:none; border-radius:10px; color:white; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s; }
+    .btn-save-modal:hover { opacity:0.9; }
+
+    /* TOAST */
+    @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    /* PAGINATION */
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 20px; }
+    .page-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.2); background: rgba(30,41,59,0.6); color: #94a3b8; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    .page-btn:hover, .page-btn.active { background: #3b82f6; border-color: #3b82f6; color: white; }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .no-backend {
+      text-align:center; padding:60px 20px; color:#64748b;
+    }
+    .no-backend .icon { font-size:52px; margin-bottom:14px; }
+    .no-backend h3 { color:#e5e7eb; margin-bottom:8px; }
+    .no-backend code { display:block; margin:16px auto; padding:12px 20px; background:rgba(30,41,59,0.8); border-radius:10px; font-size:13px; color:#3b82f6; max-width:320px; }
+  </style>
+</head>
+<body>
+<script>
+(function(){
+  const s = JSON.parse(localStorage.getItem('smart_retail_settings')||'{}');
+  const theme  = s.theme  || 'dark';
+  const accent = s.accent || '#3b82f6';
+  if(theme==='light'){
+    document.documentElement.style.setProperty('--bg','#f1f5f9');
+    document.documentElement.style.setProperty('--text','#0f172a');
+    document.documentElement.style.setProperty('--card','#ffffff');
+    document.documentElement.style.setProperty('--border','#e2e8f0');
+    document.documentElement.style.setProperty('--sidebar','rgba(241,245,249,0.98)');
+  } else if(theme==='blue'){
+    document.documentElement.style.setProperty('--bg','#0d1f3c');
+    document.documentElement.style.setProperty('--text','#e5e7eb');
+    document.documentElement.style.setProperty('--card','rgba(13,31,60,0.9)');
+    document.documentElement.style.setProperty('--border','rgba(59,130,246,0.2)');
+    document.documentElement.style.setProperty('--sidebar','rgba(10,20,50,0.98)');
+  } else {
+    document.documentElement.style.setProperty('--bg','#0a0e1a');
+    document.documentElement.style.setProperty('--text','#e5e7eb');
+    document.documentElement.style.setProperty('--card','rgba(15,23,42,0.8)');
+    document.documentElement.style.setProperty('--border','rgba(148,163,184,0.2)');
+    document.documentElement.style.setProperty('--sidebar','rgba(15,23,42,0.95)');
+  }
+  document.documentElement.style.setProperty('--accent', accent);
+})();
+</script>
+
+  <div class="sidebar">
+    <div class="sidebar-header"><h2>Smart Retail</h2></div>
+    <nav class="nav-menu">
+      <a href="dashboard_dynamic.html" class="nav-item"><span>📊</span><span>Dashboard</span></a>
+      <a href="products.html"          class="nav-item"><span>📦</span><span>Products</span></a>
+      <a href="orders.html"            class="nav-item active"><span>🛒</span><span>Orders</span></a>
+      <a href="customers.html"         class="nav-item"><span>👥</span><span>Customers</span></a>
+      <a href="automation.html"        class="nav-item"><span>🤖</span><span>Automation</span></a>
+      <a href="dashboard_analytics.html" class="nav-item"><span>📈</span><span>Analytics</span></a>
+      <a href="settings.html"          class="nav-item"><span>⚙️</span><span>Settings</span></a>
+      <a href="index.html"             class="nav-item"><span>🚪</span><span>Logout</span></a>
+    </nav>
+  </div>
+
+  <div class="main-content">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-left">
+        <h1>🛒 Orders Management</h1>
+        <p id="order-count">Loading orders...</p>
+      </div>
+      <div id="connection-status" class="connection-status status-disconnected">
+        <span class="status-dot" style="background:#ef4444"></span>
+        <span>Connecting...</span>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value c-blue" id="stat-total">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value c-green" id="stat-completed">—</div>
+        <div class="stat-sub">Successfully delivered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value c-yellow" id="stat-pending">—</div>
+        <div class="stat-sub">Awaiting action</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value c-green" id="stat-revenue">—</div>
+        <div class="stat-sub">Completed orders only</div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search by customer, order ID, email..." oninput="applyFilters()" />
+      </div>
+      <select class="filter-select" id="status-filter" onchange="applyFilters()">
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="processing">Processing</option>
+        <option value="shipped">Shipped</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <select class="filter-select" id="payment-filter" onchange="applyFilters()">
+        <option value="">All Payments</option>
+        <option value="paid">Paid</option>
+        <option value="unpaid">Unpaid</option>
+      </select>
+      <select class="filter-select" id="sort-select" onchange="applyFilters()">
+        <option value="id_asc">Order ID (1→9)</option>
+        <option value="date_desc">Newest First</option>
+        <option value="date_asc">Oldest First</option>
+        <option value="amount_desc">Highest Amount</option>
+        <option value="amount_asc">Lowest Amount</option>
+      </select>
+      <button class="btn-refresh" onclick="loadOrders()">🔄 Refresh</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-header-row">
+        <span class="table-title">📋 All Orders</span>
+        <span class="order-count" id="showing-count"></span>
+      </div>
+      <div id="orders-table-body">
+        <div class="empty-state">
+          <div class="icon">⏳</div>
+          <p>Loading orders from database...</p>
+        </div>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+  </div>
+
+  <!-- STATUS UPDATE MODAL -->
+  <div id="statusModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-title">✏️ Update Order Status</div>
+      <div class="modal-sub" id="modal-order-label">Order #—</div>
+      <div class="status-options">
+        <div class="status-option" onclick="selectStatus('pending')">⏳ Pending</div>
+        <div class="status-option" onclick="selectStatus('processing')">⚙️ Processing</div>
+        <div class="status-option" onclick="selectStatus('shipped')">🚚 Shipped</div>
+        <div class="status-option" onclick="selectStatus('completed')">✅ Completed</div>
+        <div class="status-option" onclick="selectStatus('cancelled')">❌ Cancelled</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel-modal" onclick="closeStatusModal()">Cancel</button>
+        <button class="btn-save-modal" onclick="saveStatus()">Save Status</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+    function getCurrencySymbol() {
+      if (!localStorage.getItem('currency_symbol')) {
+        localStorage.setItem('currency_symbol', '₹');
+        localStorage.setItem('currency_rate', '1');
+      }
+      // Fix wrong rate if it was previously set to 1 for INR
+      const sym = localStorage.getItem('currency_symbol') || '₹';
+      const rate = parseFloat(localStorage.getItem('currency_rate') || '1');
+      if (sym === '₹' && rate < 1) {
+        localStorage.setItem('currency_rate', '1');
+      }
+      return sym;
+    }
+    function getCurrencyRate() {
+      return parseFloat(localStorage.getItem('currency_rate') || '1');
+    }
+    function formatCurrency(amount) {
+      const sym  = getCurrencySymbol();
+      const rate = getCurrencyRate();
+      const val  = parseFloat(String(amount).replace(/[^0-9.]/g,'')) || 0;
+      const converted = val * rate;
+      return sym + converted.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+    let allOrders = [];
+    let filteredOrders = [];
+    let currentPage = 1;
+    const PAGE_SIZE = 10;
+    let editingOrderId = null;
+    let selectedStatus = null;
+
+    // ── Connection status ──────────────────────────────
+    function setConnected(ok) {
+      const el = document.getElementById('connection-status');
+      const dot = el.querySelector('.status-dot');
+      const txt = el.querySelector('span:last-child');
+      el.className = 'connection-status ' + (ok ? 'status-connected' : 'status-disconnected');
+      dot.style.background = ok ? '#22c55e' : '#ef4444';
+      txt.textContent = ok ? 'Connected' : 'Disconnected';
+    }
+
+    // ── Load orders ────────────────────────────────────
+    async function loadOrders() {
+      try {
+        const res = await fetch(`${API_URL}/api/orders`);
+        if (!res.ok) throw new Error('Failed');
+        allOrders = await res.json();
+        setConnected(true);
+        updateStats();
+        applyFilters();
+        document.getElementById('order-count').textContent =
+          `${allOrders.length} total orders`;
+      } catch (e) {
+        setConnected(false);
+        document.getElementById('order-count').textContent = 'Unable to load orders';
+        document.getElementById('orders-table-body').innerHTML = `
+          <div class="no-backend">
+            <div class="icon">🔌</div>
+            <h3>Backend not connected</h3>
+            <p>Make sure the backend is running:</p>
+            <code>npm start</code>
+            <button class="btn-refresh" style="margin-top:16px" onclick="loadOrders()">🔄 Retry</button>
+          </div>`;
+      }
+    }
+
+    // ── Stats ──────────────────────────────────────────
+    function updateStats() {
+      const total     = allOrders.length;
+      const completed = allOrders.filter(o => o.status === 'completed').length;
+      const pending   = allOrders.filter(o => o.status === 'pending').length;
+      const revenue   = allOrders
+        .filter(o => o.status === 'completed')
+        .reduce((s, o) => s + parseFloat(o.total_amount || 0), 0);
+
+      document.getElementById('stat-total').textContent     = total;
+      document.getElementById('stat-completed').textContent = completed;
+      document.getElementById('stat-pending').textContent   = pending;
+      document.getElementById('stat-revenue').textContent   = formatCurrency(revenue);
+    }
+
+    // ── Filters + sort ─────────────────────────────────
+    function applyFilters() {
+      const q       = document.getElementById('search-input').value.toLowerCase();
+      const status  = document.getElementById('status-filter').value;
+      const payment = document.getElementById('payment-filter').value;
+      const sort    = document.getElementById('sort-select').value;
+
+      filteredOrders = allOrders.filter(o => {
+        const matchQ = !q || 
+          (o.customer_name  || '').toLowerCase().includes(q) ||
+          (o.customer_email || '').toLowerCase().includes(q) ||
+          String(o.order_id).includes(q);
+        const matchStatus  = !status  || o.status === status;
+        const matchPayment = !payment || (o.payment_status || '').toLowerCase() === payment;
+        return matchQ && matchStatus && matchPayment;
+      });
+
+      filteredOrders.sort((a, b) => {
+        if (sort === 'id_asc')      return a.order_id - b.order_id;
+        if (sort === 'date_desc')   return new Date(b.order_date) - new Date(a.order_date);
+        if (sort === 'date_asc')    return new Date(a.order_date) - new Date(b.order_date);
+        if (sort === 'amount_desc') return parseFloat(b.total_amount) - parseFloat(a.total_amount);
+        if (sort === 'amount_asc')  return parseFloat(a.total_amount) - parseFloat(b.total_amount);
+        return a.order_id - b.order_id;
+      });
+
+      currentPage = 1;
+      renderTable();
+      renderPagination();
+    }
+
+    // ── Render table ───────────────────────────────────
+    function statusBadge(s) {
+      const map = {
+        pending:    'badge-pending',
+        processing: 'badge-processing',
+        shipped:    'badge-shipped',
+        completed:  'badge-completed',
+        cancelled:  'badge-cancelled',
+      };
+      const icons = { pending:'⏳', processing:'⚙️', shipped:'🚚', completed:'✅', cancelled:'❌' };
+      const cls = map[s] || 'badge-pending';
+      return `<span class="badge ${cls}">${icons[s]||''} ${s||'—'}</span>`;
+    }
+
+    function paymentBadge(p) {
+      const cls = p === 'paid' ? 'badge-paid' : 'badge-unpaid';
+      return `<span class="badge ${cls}">${p === 'paid' ? '💳 Paid' : '⚠️ Unpaid'}</span>`;
+    }
+
+    function formatDate(d) {
+      if (!d) return '—';
+      const dt = new Date(d);
+      return dt.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) +
+             ' ' + dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    function renderTable() {
+      const body = document.getElementById('orders-table-body');
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const page  = filteredOrders.slice(start, start + PAGE_SIZE);
+
+      document.getElementById('showing-count').textContent =
+        filteredOrders.length
+          ? `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, filteredOrders.length)} of ${filteredOrders.length}`
+          : '';
+
+      if (filteredOrders.length === 0) {
+        body.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">🔍</div>
+            <p>No orders match your filters</p>
+          </div>`;
+        return;
+      }
+
+      body.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th>Method</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${page.map(o => `
+              <tr>
+                <td><span class="order-id">#${o.order_id}</span></td>
+                <td>
+                  <div class="customer-name">${o.customer_name || '—'}</div>
+                  <div class="customer-email">${o.customer_email || ''}</div>
+                </td>
+                <td><span class="order-amount">${formatCurrency(parseFloat(o.total_amount || 0).toFixed(2))}</span></td>
+                <td>${statusBadge(o.status)}</td>
+                <td>${paymentBadge(o.payment_status)}</td>
+                <td><span class="payment-method">${o.payment_method || '—'}</span></td>
+                <td><span class="order-date">${formatDate(o.order_date)}</span></td>
+                <td>
+                  <button class="btn-status" onclick="openStatusModal(${o.order_id}, '${o.status}')">
+                    ✏️ Status
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    // ── Pagination ─────────────────────────────────────
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredOrders.length / PAGE_SIZE);
+      const pg = document.getElementById('pagination');
+      if (totalPages <= 1) { pg.innerHTML = ''; return; }
+
+      let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Prev</button>`;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+      }
+      html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Next →</button>`;
+      pg.innerHTML = html;
+    }
+
+    function goPage(n) {
+      const total = Math.ceil(filteredOrders.length / PAGE_SIZE);
+      if (n < 1 || n > total) return;
+      currentPage = n;
+      renderTable();
+      renderPagination();
+    }
+
+    // ── Status modal ───────────────────────────────────
+    function openStatusModal(id, currentStatus) {
+      editingOrderId = id;
+      selectedStatus = currentStatus;
+      document.getElementById('modal-order-label').textContent = `Order #${id} — current: ${currentStatus}`;
+      document.querySelectorAll('.status-option').forEach(el => {
+        el.classList.toggle('selected', el.textContent.toLowerCase().includes(currentStatus));
+      });
+      document.getElementById('statusModal').classList.add('active');
+    }
+
+    function closeStatusModal() {
+      document.getElementById('statusModal').classList.remove('active');
+      editingOrderId = null; selectedStatus = null;
+    }
+
+    function selectStatus(s) {
+      selectedStatus = s;
+      document.querySelectorAll('.status-option').forEach(el => {
+        el.classList.toggle('selected', el.textContent.toLowerCase().includes(s));
+      });
+    }
+
+    async function saveStatus() {
+      if (!editingOrderId || !selectedStatus) return;
+      try {
+        const res = await fetch(`${API_URL}/api/orders/${editingOrderId}/status`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ status: selectedStatus })
+        });
+        if (res.ok) {
+          closeStatusModal();
+          showToast(`✅ Order #${editingOrderId} → ${selectedStatus}`);
+          loadOrders();
+        } else {
+          const err = await res.json();
+          alert('❌ Error: ' + (err.error || 'Unknown'));
+        }
+      } catch (e) {
+        alert('❌ Backend not reachable: ' + e.message);
+      }
+    }
+
+    // ── Toast ──────────────────────────────────────────
+    function showToast(msg) {
+      let t = document.getElementById('toast');
+      if (!t) {
+        t = document.createElement('div'); t.id = 'toast';
+        t.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:9999;
+          background:rgba(15,23,42,0.97);border:1px solid #22c55e;color:#e5e7eb;
+          padding:14px 22px;border-radius:12px;font-size:14px;font-weight:600;
+          box-shadow:0 8px 30px rgba(0,0,0,0.4);animation:slideUp 0.3s ease;display:none;`;
+        document.body.appendChild(t);
+      }
+      t.textContent = msg; t.style.display = 'block';
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    // Close modal on outside click
+    document.getElementById('statusModal').addEventListener('click', function(e) {
+      if (e.target === this) closeStatusModal();
+    });
+
+    // Init
+    loadOrders();
+  </script>
+</body>
+</html>
